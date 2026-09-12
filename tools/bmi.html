@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BMI 计算器 - 在线身体质量指数计算 | 实用工具箱</title>
+  <meta name="description" content="在线 BMI 计算器，输入身高体重即可得出身体质量指数 BMI，附健康范围解读和标准对照表。男女老少通用。">
+  <meta name="keywords" content="BMI计算器,身体质量指数,BMI标准,BMI对照表,健康体重">
+  <link rel="canonical" href="https://your-domain.com/tools/bmi.html">
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+
+<main class="main">
+  <div class="container">
+    <div class="tool-page">
+      <div class="tool-content">
+        <h1>⚖️ BMI 计算器</h1>
+        <p class="lead">输入身高体重，计算身体质量指数 BMI，并给出健康范围解读。</p>
+
+        <div class="form-group">
+          <label>性别</label>
+          <select class="form-control" id="gender" style="width:auto">
+            <option value="m">男</option>
+            <option value="f">女</option>
+          </select>
+        </div>
+
+        <div class="form-row" style="grid-template-columns:1fr 1fr">
+          <div class="form-group">
+            <label>身高 (cm)</label>
+            <input type="number" class="form-control" id="height" value="170" min="50" max="300" oninput="BMI.calc()">
+          </div>
+          <div class="form-group">
+            <label>体重 (kg)</label>
+            <input type="number" class="form-control" id="weight" value="65" min="10" max="500" oninput="BMI.calc()">
+          </div>
+        </div>
+
+        <div class="result-box" id="bmi-result">
+          <div class="result-value" id="bmi-value">22.5</div>
+          <div class="result-label" id="bmi-label">正常范围</div>
+        </div>
+
+        <div style="margin-top:20px;padding:16px;background:#f8fafc;border-radius:8px;font-size:0.9rem;color:var(--text-muted)" id="bmi-range"></div>
+
+        <div id="ad-mid" style="margin-top:24px"></div>
+
+        <!-- BMI 对照表 -->
+        <h2 style="font-size:1.2rem;margin-top:32px;margin-bottom:12px">BMI 标准对照表</h2>
+        <table style="width:100%;border-collapse:collapse;font-size:0.9rem">
+          <thead>
+            <tr style="background:#f1f5f9">
+              <th style="padding:10px;text-align:left;border-bottom:2px solid var(--border)">分类</th>
+              <th style="padding:10px;text-align:left;border-bottom:2px solid var(--border)">BMI 范围</th>
+              <th style="padding:10px;text-align:left;border-bottom:2px solid var(--border)">健康风险</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td style="padding:10px;border-bottom:1px solid var(--border)">偏瘦</td><td style="padding:10px;border-bottom:1px solid var(--border)">&lt; 18.5</td><td style="padding:10px;border-bottom:1px solid var(--border)">营养不足</td></tr>
+            <tr><td style="padding:10px;border-bottom:1px solid var(--border)">正常</td><td style="padding:10px;border-bottom:1px solid var(--border)">18.5 - 23.9</td><td style="padding:10px;border-bottom:1px solid var(--border)">健康范围</td></tr>
+            <tr><td style="padding:10px;border-bottom:1px solid var(--border)">超重</td><td style="padding:10px;border-bottom:1px solid var(--border)">24.0 - 27.9</td><td style="padding:10px;border-bottom:1px solid var(--border)">轻度风险</td></tr>
+            <tr><td style="padding:10px;border-bottom:1px solid var(--border)">肥胖</td><td style="padding:10px;border-bottom:1px solid var(--border)">≥ 28.0</td><td style="padding:10px;border-bottom:1px solid var(--border)">高风险</td></tr>
+          </tbody>
+        </table>
+
+        <h2 style="font-size:1.2rem;margin-top:32px;margin-bottom:12px">关于 BMI</h2>
+        <p style="color:var(--text-muted);line-height:1.8">
+          BMI（Body Mass Index）是衡量人体胖瘦程度的常用指标，计算公式为体重（公斤）除以身高（米）的平方。
+          BMI 适用于大多数成年人，但不适用于运动员、孕妇、儿童和老人。本工具结果仅供参考，
+          具体健康状况请咨询医生。
+        </p>
+      </div>
+
+      <aside class="sidebar">
+        <div class="sidebar-widget">
+          <h3>其他工具</h3>
+          <ul>
+            <li><a href="unit-converter.html">📐 单位转换器</a></li>
+            <li><a href="password.html">🔐 密码生成器</a></li>
+            <li><a href="qrcode.html">📱 二维码生成</a></li>
+            <li><a href="color-picker.html">🎨 颜色选择器</a></li>
+            <li><a href="word-count.html">📝 字数统计</a></li>
+          </ul>
+        </div>
+        <div class="sidebar-widget" id="ad-side"></div>
+      </aside>
+    </div>
+  </div>
+</main>
+
+<script src="../assets/js/tracker.js?v=2" data-site="tools"></script>
+<script src="../assets/js/common.js?v=2"></script>
+<script>
+var BMI = {
+  calc: function () {
+    var h = parseFloat(document.getElementById('height').value) || 0;
+    var w = parseFloat(document.getElementById('weight').value) || 0;
+    if (h <= 0 || w <= 0) return;
+    var hm = h / 100;
+    var bmi = w / (hm * hm);
+    var bmi2 = Math.round(bmi * 10) / 10;
+    var label, cls = '';
+    if (bmi < 18.5) { label = '偏瘦'; cls = 'warning'; }
+    else if (bmi < 24) { label = '正常范围'; cls = ''; }
+    else if (bmi < 28) { label = '超重'; cls = 'warning'; }
+    else { label = '肥胖'; cls = 'danger'; }
+
+    var box = document.getElementById('bmi-result');
+    box.className = 'result-box' + (cls ? ' ' + cls : '');
+    document.getElementById('bmi-value').textContent = bmi2;
+    document.getElementById('bmi-label').textContent = label;
+
+    var idealLow = Math.round(18.5 * hm * hm * 10) / 10;
+    var idealHigh = Math.round(23.9 * hm * hm * 10) / 10;
+    document.getElementById('bmi-range').innerHTML =
+      '你的身高健康体重范围：<strong>' + idealLow + ' - ' + idealHigh + ' kg</strong><br>' +
+      '当前 BMI：' + bmi2 + '，分类：' + label;
+  }
+};
+
+App.mount({
+  site: 'tools',
+  brand: '实用工具箱',
+  brandIcon: '🛠️',
+  nav: [
+    { label: '首页', href: 'index.html' },
+    { label: '单位转换', href: 'unit-converter.html' },
+    { label: 'BMI', href: 'bmi.html' },
+    { label: '密码生成', href: 'password.html' },
+    { label: '二维码', href: 'qrcode.html' }
+  ],
+  footer: { tools: [], articles: [] }
+});
+
+BMI.calc();
+document.getElementById('ad-mid').appendChild(App.ad('rectangle'));
+document.getElementById('ad-side').appendChild(App.ad('sidebar'));
+MTA.track('view_tool', { tool: 'bmi' });
+</script>
+
+</body>
+</html>

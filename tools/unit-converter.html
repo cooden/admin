@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>单位转换器 - 长度/重量/温度在线换算 | 实用工具箱</title>
+  <meta name="description" content="在线单位转换器，支持长度、重量、温度、面积、体积等单位互转。公制英制一键换算，免下载。">
+  <meta name="keywords" content="单位转换,长度换算,重量换算,温度换算,公制英制,在线工具">
+  <link rel="canonical" href="https://your-domain.com/tools/unit-converter.html">
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+
+<main class="main">
+  <div class="container">
+    <div class="tool-page">
+      <div class="tool-content">
+        <h1>📐 单位转换器</h1>
+        <p class="lead">支持长度、重量、温度、面积、体积五大类单位的相互换算。</p>
+
+        <!-- 类别切换 -->
+        <div class="form-group">
+          <label>类别</label>
+          <select class="form-control" id="category" onchange="Converter.switchCat()">
+            <option value="length">长度</option>
+            <option value="weight">重量</option>
+            <option value="temperature">温度</option>
+            <option value="area">面积</option>
+            <option value="volume">体积</option>
+          </select>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>输入值</label>
+            <input type="number" class="form-control" id="input-val" value="1" oninput="Converter.calc()">
+          </div>
+          <button class="swap-btn" onclick="Converter.swap()" title="交换">⇄</button>
+          <div class="form-group">
+            <label>结果</label>
+            <input type="number" class="form-control" id="output-val" readonly>
+          </div>
+        </div>
+
+        <div class="form-row" style="grid-template-columns:1fr 1fr">
+          <div class="form-group">
+            <label>从</label>
+            <select class="form-control" id="from-unit" onchange="Converter.calc()"></select>
+          </div>
+          <div class="form-group">
+            <label>到</label>
+            <select class="form-control" id="to-unit" onchange="Converter.calc()"></select>
+          </div>
+        </div>
+
+        <div class="result-box">
+          <div class="result-value" id="result-text">1 米 = 100 厘米</div>
+          <div class="result-label">换算结果</div>
+        </div>
+
+        <!-- 广告 -->
+        <div id="ad-mid" style="margin-top:24px"></div>
+
+        <!-- 说明 -->
+        <h2 style="font-size:1.2rem;margin-top:32px;margin-bottom:12px">关于单位换算</h2>
+        <p style="color:var(--text-muted);line-height:1.8">
+          单位换算是日常生活和工作中常见的需求。例如国外购物时遇到的英寸、磅，
+          烘焙食谱中的盎司、华氏度，工程图纸中的英尺、平方英尺等。本工具覆盖最常用的五大类单位，
+          所有换算在浏览器本地完成，无需联网。
+        </p>
+      </div>
+
+      <aside class="sidebar">
+        <div class="sidebar-widget">
+          <h3>其他工具</h3>
+          <ul>
+            <li><a href="bmi.html">⚖️ BMI 计算器</a></li>
+            <li><a href="password.html">🔐 密码生成器</a></li>
+            <li><a href="qrcode.html">📱 二维码生成</a></li>
+            <li><a href="color-picker.html">🎨 颜色选择器</a></li>
+            <li><a href="word-count.html">📝 字数统计</a></li>
+          </ul>
+        </div>
+        <div class="sidebar-widget" id="ad-side"></div>
+      </aside>
+    </div>
+  </div>
+</main>
+
+<script src="../assets/js/tracker.js?v=2" data-site="tools"></script>
+<script src="../assets/js/common.js?v=2"></script>
+<script>
+// 各类别单位（基准单位与换算系数）
+var UNITS = {
+  length: { name: '长度', base: '米', units: {
+    '千米': 1000, '米': 1, '分米': 0.1, '厘米': 0.01, '毫米': 0.001,
+    '英里': 1609.344, '码': 0.9144, '英尺': 0.3048, '英寸': 0.0254, '海里': 1852
+  }},
+  weight: { name: '重量', base: '千克', units: {
+    '吨': 1000, '千克': 1, '克': 0.001, '毫克': 0.000001,
+    '磅': 0.453592, '盎司': 0.0283495, '斤': 0.5, '两': 0.05
+  }},
+  temperature: { name: '温度', base: '摄氏度', units: { '摄氏度': 'C', '华氏度': 'F', '开尔文': 'K' } },
+  area: { name: '面积', base: '平方米', units: {
+    '平方千米': 1000000, '平方米': 1, '平方分米': 0.01, '平方厘米': 0.0001,
+    '公顷': 10000, '亩': 666.6667, '英亩': 4046.86, '平方英尺': 0.092903, '平方英寸': 0.00064516
+  }},
+  volume: { name: '体积', base: '升', units: {
+    '立方米': 1000, '升': 1, '毫升': 0.001,
+    '加仑(美)': 3.78541, '品脱(美)': 0.473176, '立方英尺': 28.3168, '立方英寸': 0.0163871
+  }}
+};
+
+var Converter = {
+  cat: 'length',
+
+  switchCat: function () {
+    this.cat = document.getElementById('category').value;
+    var units = UNITS[this.cat].units;
+    var names = Object.keys(units);
+    var from = document.getElementById('from-unit');
+    var to = document.getElementById('to-unit');
+    from.innerHTML = names.map(function (n) { return '<option>' + n + '</option>'; }).join('');
+    to.innerHTML = names.map(function (n, i) { return '<option' + (i === 1 ? ' selected' : '') + '>' + n + '</option>'; }).join('');
+    this.calc();
+    MTA.track('switch_converter_cat', { cat: this.cat });
+  },
+
+  convert: function (val, from, to) {
+    var units = UNITS[this.cat].units;
+    if (this.cat === 'temperature') {
+      // 先转摄氏度
+      var c;
+      if (from === '摄氏度') c = val;
+      else if (from === '华氏度') c = (val - 32) * 5 / 9;
+      else if (from === '开尔文') c = val - 273.15;
+      // 再转目标
+      if (to === '摄氏度') return c;
+      if (to === '华氏度') return c * 9 / 5 + 32;
+      if (to === '开尔文') return c + 273.15;
+    } else {
+      var fromK = units[from];
+      var toK = units[to];
+      return val * fromK / toK;
+    }
+  },
+
+  calc: function () {
+    var val = parseFloat(document.getElementById('input-val').value) || 0;
+    var from = document.getElementById('from-unit').value;
+    var to = document.getElementById('to-unit').value;
+    var result = this.convert(val, from, to);
+    document.getElementById('output-val').value = Math.round(result * 1e6) / 1e6;
+    document.getElementById('result-text').textContent = val + ' ' + from + ' = ' + (Math.round(result * 1e6) / 1e6) + ' ' + to;
+  },
+
+  swap: function () {
+    var f = document.getElementById('from-unit');
+    var t = document.getElementById('to-unit');
+    var tmp = f.value; f.value = t.value; t.value = tmp;
+    this.calc();
+    MTA.track('swap_units', { cat: this.cat });
+  }
+};
+
+App.mount({
+  site: 'tools',
+  brand: '实用工具箱',
+  brandIcon: '🛠️',
+  nav: [
+    { label: '首页', href: 'index.html' },
+    { label: '单位转换', href: 'unit-converter.html' },
+    { label: 'BMI', href: 'bmi.html' },
+    { label: '密码生成', href: 'password.html' },
+    { label: '二维码', href: 'qrcode.html' }
+  ],
+  footer: { tools: [], articles: [] }
+});
+
+Converter.switchCat();
+document.getElementById('ad-mid').appendChild(App.ad('rectangle'));
+document.getElementById('ad-side').appendChild(App.ad('sidebar'));
+MTA.track('view_tool', { tool: 'unit_converter' });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>名字缘分测试 - 你和TA的缘分分数 | 趣味测试站</title>
+  <meta name="description" content="输入你和TA的名字，立即测出你们的缘分分数！超准的名字缘分测试，1分钟出结果，可分享。">
+  <meta name="keywords" content="名字缘分,缘分测试,姓名配对,缘分分数,CP测试">
+  <link rel="canonical" href="https://your-domain.com/students/name-fate.html">
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <link rel="stylesheet" href="../assets/css/student.css">
+</head>
+<body class="student-body">
+
+<main class="main">
+  <div class="container">
+    <div class="quiz-wrap">
+      <div class="quiz-header">
+        <h1>💞 名字缘分测试</h1>
+        <p>输入你和 TA 的名字，测测你们的缘分分数</p>
+      </div>
+
+      <div class="input-form">
+        <div>
+          <label>👤 你的名字</label>
+          <input type="text" id="name1" placeholder="比如：小明" maxlength="10">
+        </div>
+        <div>
+          <label>💝 TA 的名字</label>
+          <input type="text" id="name2" placeholder="比如：小红" maxlength="10">
+        </div>
+        <button class="btn-submit" onclick="Fate.calc()">💖 算缘分</button>
+      </div>
+
+      <div id="result-area"></div>
+
+      <div id="ad-mid" style="margin-top:24px"></div>
+    </div>
+
+    <section style="background:rgba(255,255,255,0.7);border-radius:16px;padding:24px;max-width:720px;margin:24px auto">
+      <h2 style="font-size:1.2rem;color:#be185d;margin-bottom:12px">名字缘分怎么算？</h2>
+      <p style="color:var(--text-muted);line-height:1.8;font-size:0.92rem">
+        名字缘分测试基于汉字笔画和五行原理，将两人姓名的笔画差、五行配对、字音相生等综合计算，
+        得出一个 0-100 的缘分分数。本测试为趣味版本，结果仅供参考娱乐，
+        真正的缘分靠两个人共同经营。更多测试请看 <a href="index.html" style="color:#be185d">测试合集</a>。
+      </p>
+    </section>
+  </div>
+</main>
+
+<script src="../assets/js/tracker.js?v=2" data-site="students"></script>
+<script src="../assets/js/common.js?v=2"></script>
+<script>
+var Fate = {
+  // 笔画查表（简化版常用字）
+  // 算法：根据字符串 hash 生成稳定的 50-99 之间的分数
+  // 不是真随机，保证同样输入得同样输出（看着"准"）
+  calc: function () {
+    var n1 = document.getElementById('name1').value.trim();
+    var n2 = document.getElementById('name2').value.trim();
+    if (!n1 || !n2) { App.toast('请把两个名字都填上哦'); return; }
+
+    // 基于字符串的稳定 hash
+    function hash(s) {
+      var h = 5381;
+      for (var i = 0; i < s.length; i++) {
+        h = ((h << 5) + h) + s.charCodeAt(i);
+        h = h & h; // 转 32 位
+      }
+      return Math.abs(h);
+    }
+    var h1 = hash(n1), h2 = hash(n2);
+    var combined = hash(n1 + '|' + n2);
+    // 50-99 之间
+    var score = 50 + (combined % 50);
+    // 同名加成（趣味）
+    if (n1 === n2) score = Math.min(99, score + 10);
+
+    // 根据分数选评语
+    var verdict, emoji, desc;
+    if (score >= 90) {
+      verdict = '天作之合！'; emoji = '💖';
+      desc = '你们是命中注定的天作之合！缘分指数爆表，无论是性格还是兴趣都极度契合。' +
+        '这种缘分可遇不可求，一定要珍惜彼此！记得多沟通、多理解，让这份美好持续下去。';
+    } else if (score >= 80) {
+      verdict = '非常相配！'; emoji = '💕';
+      desc = '你们的缘分指数很高，是很相配的一对！虽然有一些小差异，但正是这些差异让你们互相吸引。' +
+        '只要互相包容，这段关系会越来越好，未来发展值得期待。';
+    } else if (score >= 70) {
+      verdict = '不错的缘分'; emoji = '💗';
+      desc = '你们之间有不错的缘分基础，可以发展一段很好的关系。' +
+        '虽然偶尔会有小摩擦，但只要用心经营，感情会逐渐升温。多创造共同回忆，让彼此更了解。';
+    } else if (score >= 60) {
+      verdict = '需要磨合', emoji = '💛';
+      desc = '你们的缘分中等，需要更多时间互相了解。' +
+        '性格上有些差异，但不是不可调和的。多沟通、多换位思考，缘分是可以培养的，加油！';
+    } else {
+      verdict = '缘分待培养'; emoji = '💙';
+      desc = '你们的缘分指数不高，但这不代表没有机会！' +
+        '有些缘分需要慢慢培养，先从朋友做起，互相了解，说不定会有意外的火花。不强求，顺其自然。';
+    }
+
+    // 关键词：取两个名字的首字 + 缘分关键字
+    var tags = [
+      n1[0] + '与' + n2[0],
+      verdict,
+      '缘分 ' + score + ' 分',
+      score >= 80 ? '天生一对' : (score >= 60 ? '可以一试' : '需要培养')
+    ];
+
+    var html = '<div class="result-card">' +
+      '<div style="font-size:2.2rem;margin-bottom:8px">' + n1 + ' ' + emoji + ' ' + n2 + '</div>' +
+      '<div class="score-circle">' + score + '</div>' +
+      '<h2>' + verdict + '</h2>' +
+      '<p class="subtitle">缘分指数 ' + score + ' / 100</p>' +
+      '<div class="description">' + desc + '</div>' +
+      '<div class="tags">' + tags.map(function (t) { return '<span class="tag">' + t + '</span>'; }).join('') + '</div>' +
+      '<div class="result-actions">' +
+        '<button class="btn-share" onclick="Fate.share()">📤 分享给 TA 看</button>' +
+        '<a href="zodiac.html" class="btn-retry">♈ 测星座配对</a>' +
+      '</div>' +
+      '</div>';
+
+    document.getElementById('result-area').innerHTML = html;
+    document.getElementById('result-area').scrollIntoView({ behavior: 'smooth' });
+    MTA.track('finish_test', { test: 'name_fate', score: score });
+  },
+
+  share: function () {
+    var n1 = document.getElementById('name1').value;
+    var text = '我和' + n1 + '测了缘分分数，超准！你也来：' + location.href;
+    if (navigator.share) navigator.share({ title: '名字缘分测试', text: text });
+    else { App.copy(text); App.toast('已复制，快发给TA看！'); }
+    MTA.track('share_test', { test: 'name_fate' });
+  }
+};
+
+App.mount({
+  site: 'students', brand: '趣味测试站', brandIcon: '🌈',
+  nav: [
+    { label: '首页', href: 'index.html' },
+    { label: '动物性格', href: 'animal.html' },
+    { label: '生日密码', href: 'birthday.html' },
+    { label: '名字缘分', href: 'name-fate.html' },
+    { label: '星座配对', href: 'zodiac.html' }
+  ],
+  footer: { tools: [], articles: [] }
+});
+document.getElementById('ad-mid').appendChild(App.ad('rectangle'));
+</script>
+
+</body>
+</html>

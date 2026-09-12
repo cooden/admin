@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>实用工具箱 - 在线工具合集 | 单位转换、BMI计算、密码生成</title>
+  <meta name="description" content="免费在线工具箱，提供单位转换、BMI计算器、密码生成器、颜色选择器等实用工具，免下载即用。">
+  <meta name="keywords" content="在线工具,单位转换,BMI计算,密码生成器,实用工具">
+  <link rel="canonical" href="https://your-domain.com/tools/">
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+
+<main class="main">
+  <div class="container">
+
+    <!-- Hero -->
+    <section class="hero">
+      <h1>🛠️ 实用工具箱</h1>
+      <p>免费、免下载的在线工具合集。单位转换、BMI计算、密码生成等常用工具，打开即用。</p>
+      <div class="hero-cta">
+        <a href="#tools" class="btn btn-primary btn-large">开始使用</a>
+        <a href="../dashboard/index.html" target="_blank" class="btn btn-outline btn-large">流量数据</a>
+      </div>
+    </section>
+
+    <!-- 广告位 -->
+    <div id="ad-top"></div>
+
+    <!-- 工具列表 -->
+    <h2 class="section-title" id="tools">实用工具</h2>
+    <p class="section-subtitle">每一项都是日常会用到的实用工具</p>
+
+    <div class="tool-grid">
+      <a href="unit-converter.html" class="tool-card" onclick="MTA.track('click_tool', {tool:'unit_converter'})">
+        <div class="tool-icon">📐</div>
+        <h3>单位转换器</h3>
+        <p>长度、重量、温度、面积、体积等常用单位互转，支持公制、英制。</p>
+      </a>
+      <a href="bmi.html" class="tool-card" onclick="MTA.track('click_tool', {tool:'bmi'})">
+        <div class="tool-icon">⚖️</div>
+        <h3>BMI 计算器</h3>
+        <p>输入身高体重，计算身体质量指数 BMI，给出健康范围解读。</p>
+      </a>
+      <a href="password.html" class="tool-card" onclick="MTA.track('click_tool', {tool:'password'})">
+        <div class="tool-icon">🔐</div>
+        <h3>密码生成器</h3>
+        <p>自定义长度与字符类型，生成高强度随机密码，本地生成不上传。</p>
+      </a>
+      <a href="qrcode.html" class="tool-card" onclick="MTA.track('click_tool', {tool:'qrcode'})">
+        <div class="tool-icon">📱</div>
+        <h3>二维码生成器</h3>
+        <p>把文本、网址、联系方式生成二维码图片，可下载保存。</p>
+      </a>
+      <a href="color-picker.html" class="tool-card" onclick="MTA.track('click_tool', {tool:'color'})">
+        <div class="tool-icon">🎨</div>
+        <h3>颜色选择器</h3>
+        <p>HEX、RGB、HSL 色值互转，调色板取色，适合设计与前端开发。</p>
+      </a>
+      <a href="word-count.html" class="tool-card" onclick="MTA.track('click_tool', {tool:'word_count'})">
+        <div class="tool-icon">📝</div>
+        <h3>字数统计</h3>
+        <p>统计中英文字数、字符数、行数，写作排版好帮手。</p>
+      </a>
+    </div>
+
+    <!-- SEO 内容段（利于收录） -->
+    <section style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:32px;margin-bottom:32px">
+      <h2 style="font-size:1.4rem;margin-bottom:16px">为什么使用在线工具？</h2>
+      <p style="color:var(--text-muted);line-height:1.8;margin-bottom:12px">
+        在线工具相比本地软件有几个显著优势：第一，无需安装下载，打开浏览器即可使用，节省存储空间；
+        第二，跨平台兼容，无论 Windows、Mac 还是手机都能用；第三，工具持续更新，无需手动升级；
+        第四，数据本地处理，隐私有保障。
+      </p>
+      <p style="color:var(--text-muted);line-height:1.8">
+        本站所有工具均在浏览器本地运行，不向服务器上传你的数据。例如密码生成器使用的
+        <a href="password.html">crypto 随机数</a>、BMI 计算的
+        <a href="bmi.html">健康评估公式</a>，都在本地完成计算。
+      </p>
+    </section>
+
+    <!-- 底部广告 -->
+    <div id="ad-bottom"></div>
+
+  </div>
+</main>
+
+<script src="../assets/js/tracker.js?v=2" data-site="tools"></script>
+<script src="../assets/js/common.js?v=2"></script>
+<script>
+App.mount({
+  site: 'tools',
+  brand: '实用工具箱',
+  brandIcon: '🛠️',
+  nav: [
+    { label: '首页', href: 'index.html' },
+    { label: '单位转换', href: 'unit-converter.html' },
+    { label: 'BMI', href: 'bmi.html' },
+    { label: '密码生成', href: 'password.html' },
+    { label: '二维码', href: 'qrcode.html' },
+    { label: '字数统计', href: 'word-count.html' }
+  ],
+  footer: {
+    tools: [
+      { label: '单位转换', href: 'unit-converter.html' },
+      { label: 'BMI计算', href: 'bmi.html' },
+      { label: '密码生成', href: 'password.html' },
+      { label: '二维码', href: 'qrcode.html' }
+    ],
+    articles: [
+      { label: '工具使用指南', href: 'guide.html' }
+    ]
+  }
+});
+document.getElementById('ad-top').appendChild(App.ad('leaderboard'));
+document.getElementById('ad-bottom').appendChild(App.ad('rectangle'));
+</script>
+
+</body>
+</html>

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>对比评测 - 哪个更好？产品服务对比 | Notion vs 印象笔记、VS Code vs WebStorm</title>
+  <meta name="description" content="热门产品服务对比测评：哪个更好？哪个更适合你？详细功能、价格、优缺点对比，帮你做出选择。">
+  <meta name="keywords" content="产品对比,哪个更好,VS,测评,选购指南">
+  <link rel="canonical" href="https://your-domain.com/reviews/">
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <style>
+    .rev-hero { text-align:left; padding:48px 0; border-bottom:2px solid var(--border); margin-bottom:32px; }
+    .rev-hero h1 { font-size:2.2rem; margin-bottom:12px; }
+    .rev-hero p { color:var(--text-muted); font-size:1.1rem; }
+    .vs-list { display:grid; grid-template-columns:repeat(auto-fill,minmax(340px,1fr)); gap:20px; }
+    .vs-card {
+      background:var(--card-bg); border:1px solid var(--border); border-radius:var(--radius);
+      padding:24px; text-decoration:none; color:var(--text); transition:all 0.2s;
+      position:relative; overflow:hidden;
+    }
+    .vs-card:hover { transform:translateY(-3px); box-shadow:var(--shadow-lg); border-color:var(--primary); }
+    .vs-card .vs-row {
+      display:flex; align-items:center; gap:12px; margin-bottom:12px;
+    }
+    .vs-card .vs-product {
+      flex:1; text-align:center; padding:12px; border-radius:8px;
+      background:#f8fafc; font-weight:600; font-size:1rem;
+    }
+    .vs-card .vs-vs {
+      background:linear-gradient(135deg,#ef4444,#dc2626); color:#fff;
+      padding:4px 10px; border-radius:20px; font-size:0.75rem; font-weight:700;
+    }
+    .vs-card .vs-tags { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+    .vs-card .vs-tag {
+      font-size:0.7rem; padding:2px 8px; background:#eef2ff; color:var(--primary);
+      border-radius:10px;
+    }
+    .vs-card h3 { font-size:0.95rem; color:var(--text-muted); margin-top:12px; line-height:1.5; }
+    .vs-card .read-more {
+      color:var(--primary); font-size:0.85rem; margin-top:12px; display:inline-block;
+    }
+  </style>
+</head>
+<body>
+
+<main class="main">
+  <div class="container">
+    <section class="rev-hero">
+      <h1>🆚 对比评测</h1>
+      <p>不知道选哪个？看我们详细的对比测评，功能、价格、优缺点一目了然。</p>
+    </section>
+
+    <div id="ad-top" style="margin-bottom:24px"></div>
+
+    <h2 class="section-title">最新对比</h2>
+    <p class="section-subtitle">每个对比都基于实际使用</p>
+
+    <div class="vs-list">
+      <a href="notion-vs-evernote.html" class="vs-card" onclick="MTA.track('click_vs', {id:'notion_evernote'})">
+        <div class="vs-row">
+          <div class="vs-product">📝 Notion</div>
+          <div class="vs-vs">VS</div>
+          <div class="vs-product">📓 印象笔记</div>
+        </div>
+        <div class="vs-tags">
+          <span class="vs-tag">笔记</span>
+          <span class="vs-tag">知识管理</span>
+          <span class="vs-tag">协作</span>
+        </div>
+        <h3>两款主流笔记软件谁更适合你？从功能、价格、协作、生态全面对比。</h3>
+        <span class="read-more">查看详细对比 →</span>
+      </a>
+
+      <a href="vscode-vs-webstorm.html" class="vs-card" onclick="MTA.track('click_vs', {id:'vscode_webstorm'})">
+        <div class="vs-row">
+          <div class="vs-product">💻 VS Code</div>
+          <div class="vs-vs">VS</div>
+          <div class="vs-product">🌀 WebStorm</div>
+        </div>
+        <div class="vs-tags">
+          <span class="vs-tag">开发工具</span>
+          <span class="vs-tag">IDE</span>
+          <span class="vs-tag">前端</span>
+        </div>
+        <h3>免费 vs 付费，轻量 vs 重度，哪款 IDE 更适合前端开发？</h3>
+        <span class="read-more">查看详细对比 →</span>
+      </a>
+
+      <a href="figma-vs-sketch.html" class="vs-card" onclick="MTA.track('click_vs', {id:'figma_sketch'})">
+        <div class="vs-row">
+          <div class="vs-product">🎨 Figma</div>
+          <div class="vs-vs">VS</div>
+          <div class="vs-product">✏️ Sketch</div>
+        </div>
+        <div class="vs-tags">
+          <span class="vs-tag">设计</span>
+          <span class="vs-tag">UI</span>
+          <span class="vs-tag">协作</span>
+        </div>
+        <h3>两大 UI 设计工具对比，跨平台、协作、生态谁更胜一筹？</h3>
+        <span class="read-more">查看详细对比 →</span>
+      </a>
+
+      <a href="notion-vs-evernote.html" class="vs-card" onclick="MTA.track('click_vs', {id:'todoist_ticktick'})">
+        <div class="vs-row">
+          <div class="vs-product">✅ Todoist</div>
+          <div class="vs-vs">VS</div>
+          <div class="vs-product">🎯 滴答清单</div>
+        </div>
+        <div class="vs-tags">
+          <span class="vs-tag">待办</span>
+          <span class="vs-tag">效率</span>
+        </div>
+        <h3>两款待办 App 谁更顺手？任务管理、日历、番茄钟全方位对比。</h3>
+        <span class="read-more">查看详细对比 →</span>
+      </a>
+    </div>
+
+    <div id="ad-bottom" style="margin-top:40px"></div>
+  </div>
+</main>
+
+<script src="../assets/js/tracker.js?v=2" data-site="reviews"></script>
+<script src="../assets/js/common.js?v=2"></script>
+<script>
+App.mount({
+  site: 'reviews',
+  brand: '对比评测',
+  brandIcon: '🆚',
+  nav: [
+    { label: '首页', href: 'index.html' },
+    { label: 'Notion vs 印象', href: 'notion-vs-evernote.html' },
+    { label: 'VS Code vs WebStorm', href: 'vscode-vs-webstorm.html' }
+  ],
+  footer: { tools: [], articles: [] }
+});
+document.getElementById('ad-top').appendChild(App.ad('leaderboard'));
+document.getElementById('ad-bottom').appendChild(App.ad('rectangle'));
+</script>
+
+</body>
+</html>

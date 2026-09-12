@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>你是哪种学生测试 - 学霸还是学渣？10题告诉你 | 趣味测试站</title>
+  <meta name="description" content="你是学霸、学渣、潜力股还是中庸生？10道题告诉你答案。超准的学生类型测试，2分钟出结果。">
+  <meta name="keywords" content="你是哪种学生,学霸学渣,学生测试,性格测试,学习类型">
+  <link rel="canonical" href="https://your-domain.com/students/student-type.html">
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <link rel="stylesheet" href="../assets/css/student.css">
+</head>
+<body class="student-body">
+
+<main class="main">
+  <div class="container">
+    <div class="quiz-wrap">
+      <div class="quiz-header">
+        <h1>📚 你是哪种学生？</h1>
+        <p>学霸、学渣、潜力股、中庸生...你是哪一类？</p>
+      </div>
+
+      <div id="quiz-content">
+        <div id="start-screen" style="text-align:center;padding:24px 0">
+          <div style="font-size:3rem;margin-bottom:16px">📚✏️🎒📝</div>
+          <p style="color:var(--text-muted);line-height:1.8;margin-bottom:24px;font-size:0.95rem">
+            班里总有几种典型的学生：<br>
+            <b>学霸</b> - 门门考试都不慌<br>
+            <b>学渣</b> - 平时睡觉考试懵<br>
+            <b>潜力股</b> - 没开发就差临门一脚<br>
+            <b>中庸生</b> - 不突出但稳如老狗<br>
+            <b>咸鱼生</b> - 万事无所谓<br><br>
+            <b>你到底是哪一种？</b><br>10 道题告诉你答案
+          </p>
+          <button class="btn-submit" onclick="StudentQuiz.start()">🚀 开始测试</button>
+        </div>
+
+        <div id="question-screen" style="display:none">
+          <div class="quiz-progress"><div class="quiz-progress-fill" id="prog-bar"></div></div>
+          <div class="quiz-progress-text" id="prog-text"></div>
+          <div class="question-card">
+            <div class="q-num" id="q-num"></div>
+            <div class="q-text" id="q-text"></div>
+            <div class="options" id="options"></div>
+          </div>
+        </div>
+
+        <div id="result-screen" style="display:none"></div>
+      </div>
+
+      <div id="ad-mid" style="margin-top:24px"></div>
+    </div>
+  </div>
+</main>
+
+<script src="../assets/js/tracker.js?v=2" data-site="students"></script>
+<script src="../assets/js/common.js?v=2"></script>
+<script>
+var StudentQuiz = {
+  qIndex: 0, scores: {},
+  questions: [
+    { q: '上课时你通常在做什么？',
+      options: [
+        { t: 'xueba', text: 'A. 认真听讲记笔记' },
+        { t: 'xuehza', text: 'B. 发呆走神' },
+        { t: 'qianli', text: 'C. 时听时不听，看心情' },
+        { t: 'zhongyong', text: 'D. 跟着听，不全记' } ] },
+    { q: '作业什么时候做？',
+      options: [
+        { t: 'xueba', text: 'A. 当天就做完' },
+        { t: 'xuehza', text: 'B. 第二天早上抄' },
+        { t: 'qianli', text: 'C. 想做就做，看心情' },
+        { t: 'zhongyong', text: 'D. 今晚或明早完成' } ] },
+    { q: '考试前一周，你的状态？',
+      options: [
+        { t: 'xueba', text: 'A. 早就复习好了，从容应对' },
+        { t: 'xuehza', text: 'B. 还没开始，临时抱佛脚' },
+        { t: 'qianli', text: 'C. 突击复习，靠小聪明' },
+        { t: 'zhongyong', text: 'D. 按部就班复习该看的' } ] },
+    { q: '选一种自习方式？',
+      options: [
+        { t: 'xueba', text: 'A. 系统整理错题，攻克薄弱点' },
+        { t: 'xuehza', text: 'B. 看不进去，玩手机' },
+        { t: 'qianli', text: 'C. 找有意思的题挑战一下' },
+        { t: 'zhongyong', text: 'D. 跟着老师节奏走' } ] },
+    { q: '你的笔记怎么样？',
+      options: [
+        { t: 'xueba', text: 'A. 整齐详细有重点' },
+        { t: 'xuehza', text: 'B. 经常找不到笔记本' },
+        { t: 'qianli', text: 'C. 心情好就记，乱但能看懂' },
+        { t: 'zhongyong', text: 'D. 还行，工整但简单' } ] },
+    { q: '老师提问你时？',
+      options: [
+        { t: 'xueba', text: 'A. 从容回答，思路清晰' },
+        { t: 'xuehza', text: 'B. 心里发慌，要么沉默要么瞎说' },
+        { t: 'qianli', text: 'C. 看心情，有时候答得很漂亮' },
+        { t: 'zhongyong', text: 'D. 还能答，不算出彩' } ] },
+    { q: '周末主要在做什么？',
+      options: [
+        { t: 'xueba', text: 'A. 系统复习 + 预习' },
+        { t: 'xianyu', text: 'B. 睡觉、打游戏、看动漫' },
+        { t: 'qianli', text: 'C. 兴趣来了学一阵' },
+        { t: 'zhongyong', text: 'D. 写作业、休息、偶尔玩' } ] },
+    { q: '你的目标感如何？',
+      options: [
+        { t: 'xueba', text: 'A. 有明确目标，知道为什么学' },
+        { t: 'xianyu', text: 'B. 没啥目标，混日子' },
+        { t: 'qianli', text: 'C. 偶尔有想法但容易动摇' },
+        { t: 'zhongyong', text: 'D. 有大致方向，不焦虑' } ] },
+    { q: '成绩波动？',
+      options: [
+        { t: 'xueba', text: 'A. 稳定，常年班级前列' },
+        { t: 'xuehza', text: 'B. 不稳定，看运气' },
+        { t: 'qianli', text: 'C. 大起大落，看心情' },
+        { t: 'zhongyong', text: 'D. 中等偏上，偶尔波动' } ] },
+    { q: '你觉得自己是？',
+      options: [
+        { t: 'xueba', text: 'A. 努力型选手' },
+        { t: 'xianyu', text: 'B. 咸鱼本咸' },
+        { t: 'qianli', text: 'C. 聪明但没发挥' },
+        { t: 'zhongyong', text: 'D. 普普通通但踏实' } ] }
+  ],
+
+  results: {
+    xueba: { emoji: '🏆', name: '学霸', subtitle: '稳定输出的努力型选手',
+      desc: '你是大家口中的"学霸"！目标明确，方法得当，日积月累稳扎稳打。老师喜欢你，同学佩服你，但也要注意别太卷，劳逸结合效率更高。继续保持，未来可期！',
+      tags: ['目标明确', '稳扎稳打', '自律超强', '未来可期'] },
+    xuehza: { emoji: '😴', name: '学渣', subtitle: '潜力股的反面教材',
+      desc: '嗯...你目前的学业状态需要调整。但其实你不是真的笨，只是没找到学习方法和动力。建议从小目标开始，比如今天认真听完一节课。每个人潜力都很大，行动起来什么时候都不晚。',
+      tags: ['潜力股', '找方法', '别躺平', '慢慢来'] },
+    qianli: { emoji: '⚡', name: '潜力股', subtitle: '没开发的隐藏大佬',
+      desc: '你是被低估的潜力股！聪明但缺乏坚持，做事凭心情。一旦找到目标和方向，你能爆发惊人的能量。建议给自己定个小目标坚持 21 天试试，你会发现不一样的自己。',
+      tags: ['聪明潜力', '需要坚持', '定个目标', '别浪费'] },
+    zhongyong: { emoji: '⚖️', name: '中庸生', subtitle: '稳如老狗的中等生',
+      desc: '你是班级里的"稳定器"。成绩不突出但不出格，跟着节奏走，不出错。这种性格的好处是抗压能力强，坏处是缺乏突破。如果想更进一步，试着跳出舒适区，挑战一下难题。',
+      tags: ['稳定输出', '抗压强', '中规中矩', '可以突破'] },
+    xianyu: { emoji: '🐟', name: '咸鱼生', subtitle: '万事无所谓的松弛感',
+      desc: '你已经达到了"佛系"的境界，对成绩、名次都看得淡。这种松弛感值得羡慕，但也要注意：完全躺平会错过很多机会。建议至少找到一个感兴趣的方向，认真投入一次，说不定能翻个身。',
+      tags: ['佛系松弛', '不焦虑', '找兴趣', '试试翻身'] }
+  },
+
+  start: function () {
+    this.qIndex = 0; this.scores = {};
+    document.getElementById('start-screen').style.display = 'none';
+    document.getElementById('result-screen').style.display = 'none';
+    document.getElementById('question-screen').style.display = '';
+    this.showQ();
+    MTA.track('start_test', { test: 'student_type' });
+  },
+
+  showQ: function () {
+    var q = this.questions[this.qIndex];
+    var pct = (this.qIndex / this.questions.length) * 100;
+    document.getElementById('prog-bar').style.width = pct + '%';
+    document.getElementById('prog-text').textContent = '第 ' + (this.qIndex + 1) + ' / ' + this.questions.length + ' 题';
+    document.getElementById('q-num').textContent = 'Question ' + (this.qIndex + 1);
+    document.getElementById('q-text').textContent = q.q;
+    document.getElementById('options').innerHTML = q.options.map(function (o, i) {
+      return '<div class="option" onclick="StudentQuiz.answer(\'' + o.t + '\')"><span class="letter">' + 'ABCD'[i] + '</span>' + o.text.slice(3) + '</div>';
+    }).join('');
+  },
+
+  answer: function (t) {
+    this.scores[t] = (this.scores[t] || 0) + 1;
+    this.qIndex++;
+    if (this.qIndex < this.questions.length) this.showQ();
+    else this.showResult();
+  },
+
+  showResult: function () {
+    document.getElementById('prog-bar').style.width = '100%';
+    document.getElementById('prog-text').textContent = '✨ 揭晓答案！';
+    var max = 0, win = 'zhongyong';
+    for (var t in this.scores) {
+      if (this.scores[t] > max) { max = this.scores[t]; win = t; }
+    }
+    var r = this.results[win];
+    document.getElementById('question-screen').style.display = 'none';
+    var result = document.getElementById('result-screen');
+    result.style.display = '';
+    result.innerHTML = '<div class="result-card">' +
+      '<div class="result-emoji">' + r.emoji + '</div>' +
+      '<h2>你是' + r.name + '！</h2>' +
+      '<p class="subtitle">' + r.subtitle + '</p>' +
+      '<div class="description">' + r.desc + '</div>' +
+      '<div class="tags">' + r.tags.map(function (t) { return '<span class="tag">' + t + '</span>'; }).join('') + '</div>' +
+      '<div class="result-actions">' +
+        '<button class="btn-share" onclick="StudentQuiz.share(\'' + r.name + '\')">📤 分享结果</button>' +
+        '<a href="animal.html" class="btn-retry">🦊 测动物性格</a>' +
+      '</div>' +
+      '</div>';
+    MTA.track('finish_test', { test: 'student_type', result: win });
+  },
+
+  share: function (name) {
+    var text = '我测出来是' + name + '！你呢？' + location.href;
+    if (navigator.share) navigator.share({ title: '你是哪种学生', text: text });
+    else { App.copy(text); App.toast('已复制，快去分享！'); }
+    MTA.track('share_test', { test: 'student_type', result: name });
+  }
+};
+
+App.mount({
+  site: 'students', brand: '趣味测试站', brandIcon: '🌈',
+  nav: [
+    { label: '首页', href: 'index.html' },
+    { label: '动物性格', href: 'animal.html' },
+    { label: '生日密码', href: 'birthday.html' },
+    { label: '名字缘分', href: 'name-fate.html' },
+    { label: '星座配对', href: 'zodiac.html' }
+  ],
+  footer: { tools: [], articles: [] }
+});
+document.getElementById('ad-mid').appendChild(App.ad('rectangle'));
+</script>
+
+</body>
+</html>

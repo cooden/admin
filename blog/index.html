@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>生活小百科 - 实用知识分享 | 健康养生、生活窍门、科普知识</title>
+  <meta name="description" content="生活小百科，分享健康养生、生活窍门、科普知识等实用文章。每日更新，通俗易懂，让生活更美好。">
+  <meta name="keywords" content="生活知识,健康养生,生活窍门,科普,实用知识">
+  <link rel="canonical" href="https://your-domain.com/blog/">
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <style>
+    .blog-hero { text-align:left; padding:48px 0; }
+    .blog-hero h1 { font-size:2.2rem; margin-bottom:12px; }
+    .featured-article {
+      display:grid; grid-template-columns: 1.5fr 1fr; gap:24px; margin-bottom:40px;
+      background:var(--card-bg); border:1px solid var(--border); border-radius:var(--radius);
+      overflow:hidden;
+    }
+    .featured-article .thumb {
+      background:linear-gradient(135deg,#dbeafe,#ede9fe); min-height:240px;
+      display:flex;align-items:center;justify-content:center;font-size:4rem;
+    }
+    .featured-article .body { padding:24px; }
+    .featured-article h2 { font-size:1.4rem; margin-bottom:8px; }
+    .featured-article h2 a { color:var(--text); }
+    .featured-article h2 a:hover { color:var(--primary); }
+    .article-meta { color:var(--text-muted); font-size:0.85rem; margin-bottom:12px; }
+    .article-list { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:24px; }
+    .article-card {
+      background:var(--card-bg); border:1px solid var(--border); border-radius:var(--radius);
+      overflow:hidden; text-decoration:none; color:var(--text); transition:all 0.2s;
+    }
+    .article-card:hover { transform:translateY(-3px); box-shadow:var(--shadow-lg); border-color:var(--primary); }
+    .article-card .thumb {
+      height:160px; display:flex;align-items:center;justify-content:center;font-size:2.5rem;
+    }
+    .article-card .body { padding:20px; }
+    .article-card h3 { font-size:1.1rem; margin-bottom:8px; }
+    .article-card .excerpt { color:var(--text-muted); font-size:0.9rem; line-height:1.6; }
+    .category-tag {
+      display:inline-block; font-size:0.7rem; padding:2px 8px; background:#eef2ff;
+      color:var(--primary); border-radius:10px; margin-bottom:8px;
+    }
+  </style>
+</head>
+<body>
+
+<main class="main">
+  <div class="container">
+
+    <section class="blog-hero">
+      <h1>📚 生活小百科</h1>
+      <p style="color:var(--text-muted);font-size:1.1rem;max-width:600px">分享健康养生、生活窍门、科普知识。每日更新，通俗易懂。</p>
+    </section>
+
+    <div id="ad-top" style="margin-bottom:32px"></div>
+
+    <!-- 置顶文章 -->
+    <article class="featured-article">
+      <a href="health/bmi-meaning.html" class="thumb" style="text-decoration:none" onclick="MTA.track('click_featured', {a:'bmi_meaning'})">⚖️</a>
+      <div class="body">
+        <span class="category-tag">健康</span>
+        <h2><a href="health/bmi-meaning.html" onclick="MTA.track('click_featured', {a:'bmi_meaning'})">BMI 是什么？多少算正常？一文读懂身体质量指数</a></h2>
+        <div class="article-meta">2026-09-08 · 健康 · 5 分钟阅读</div>
+        <p style="color:var(--text-muted);line-height:1.8">BMI 是衡量人体胖瘦程度的常用指标，但很多人不知道自己 BMI 多少算正常。本文详细解释 BMI 的计算方法、标准范围、局限性以及如何科学控制体重……</p>
+        <a href="health/bmi-meaning.html" style="display:inline-block;margin-top:12px" onclick="MTA.track('click_featured', {a:'bmi_meaning'})">阅读全文 →</a>
+      </div>
+    </article>
+
+    <h2 class="section-title">最新文章</h2>
+    <p class="section-subtitle">每周持续更新</p>
+
+    <div class="article-list">
+      <a href="life/save-electricity.html" class="article-card" onclick="MTA.track('click_card', {a:'save_elec'})">
+        <div class="thumb" style="background:linear-gradient(135deg,#fef3c7,#fde68a)">💡</div>
+        <div class="body">
+          <span class="category-tag">生活</span>
+          <h3>夏季省电窍门：10 招降低空调电费</h3>
+          <p class="excerpt">空调是夏季电费大头，本文分享 10 个实用省电技巧，从温度设置到日常维护，轻松每月省下几十块……</p>
+          <div class="article-meta">2026-09-07 · 4 分钟</div>
+        </div>
+      </a>
+      <a href="tech/strong-password.html" class="article-card" onclick="MTA.track('click_card', {a:'pwd'})">
+        <div class="thumb" style="background:linear-gradient(135deg,#dbeafe,#bfdbfe)">🔐</div>
+        <div class="body">
+          <span class="category-tag">科技</span>
+          <h3>什么样的密码最安全？密码强度评估指南</h3>
+          <p class="excerpt">123456、abc123 这些密码 1 秒就能被破解。本文科普密码安全原理，教你设置真正强密码的方法……</p>
+          <div class="article-meta">2026-09-06 · 6 分钟</div>
+        </div>
+      </a>
+      <a href="health/bmi-meaning.html" class="article-card" onclick="MTA.track('click_card', {a:'bmi_meaning'})">
+        <div class="thumb" style="background:linear-gradient(135deg,#dcfce7,#bbf7d0)">⚖️</div>
+        <div class="body">
+          <span class="category-tag">健康</span>
+          <h3>BMI 是什么？多少算正常？一文读懂</h3>
+          <p class="excerpt">BMI 是衡量胖瘦程度的常用指标，但很多人不知道多少算正常。本文详细解释计算方法、标准范围和局限……</p>
+          <div class="article-meta">2026-09-08 · 5 分钟</div>
+        </div>
+      </a>
+      <a href="life/cooking-tips.html" class="article-card" onclick="MTA.track('click_card', {a:'cook'})">
+        <div class="thumb" style="background:linear-gradient(135deg,#fce7f3,#fbcfe8)">🍳</div>
+        <div class="body">
+          <span class="category-tag">生活</span>
+          <h3>厨房小窍门：50 个让做饭更轻松的技巧</h3>
+          <p class="excerpt">从切洋葱不流泪到米饭不糊锅，本文整理 50 个厨房实用技巧，让你的烹饪效率翻倍……</p>
+          <div class="article-meta">2026-09-05 · 8 分钟</div>
+        </div>
+      </a>
+      <a href="tech/unit-system.html" class="article-card" onclick="MTA.track('click_card', {a:'unit'})">
+        <div class="thumb" style="background:linear-gradient(135deg,#e0e7ff,#c7d2fe)">📐</div>
+        <div class="body">
+          <span class="category-tag">科普</span>
+          <h3>公制与英制单位：一篇文章搞懂换算</h3>
+          <p class="excerpt">看到英里、磅、华氏度就头疼？本文带你搞懂公制和英制的核心区别，附常用换算速查表……</p>
+          <div class="article-meta">2026-09-04 · 7 分钟</div>
+        </div>
+      </a>
+      <a href="life/clean-home.html" class="article-card" onclick="MTA.track('click_card', {a:'clean'})">
+        <div class="thumb" style="background:linear-gradient(135deg,#ccfbf1,#99f6e4)">🧽</div>
+        <div class="body">
+          <span class="category-tag">生活</span>
+          <h3>高效打扫卫生：从房间到厨房的清单</h3>
+          <p class="excerpt">家里打扫总是没头绪？本文按房间整理出系统化清洁清单，配合时间规划，周末 2 小时搞定全屋……</p>
+          <div class="article-meta">2026-09-03 · 6 分钟</div>
+        </div>
+      </a>
+    </div>
+
+    <div id="ad-bottom" style="margin-top:40px"></div>
+
+  </div>
+</main>
+
+<script src="../assets/js/tracker.js?v=2" data-site="blog"></script>
+<script src="../assets/js/common.js?v=2"></script>
+<script>
+App.mount({
+  site: 'blog',
+  brand: '生活小百科',
+  brandIcon: '📚',
+  nav: [
+    { label: '首页', href: 'index.html' },
+    { label: '健康', href: 'index.html#health' },
+    { label: '生活', href: 'index.html#life' },
+    { label: '科技', href: 'index.html#tech' }
+  ],
+  footer: {
+    articles: [
+      { label: 'BMI 是什么', href: 'health/bmi-meaning.html' },
+      { label: '夏季省电窍门', href: 'life/save-electricity.html' },
+      { label: '密码安全指南', href: 'tech/strong-password.html' }
+    ]
+  }
+});
+document.getElementById('ad-top').appendChild(App.ad('leaderboard'));
+document.getElementById('ad-bottom').appendChild(App.ad('rectangle'));
+</script>
+
+</body>
+</html>

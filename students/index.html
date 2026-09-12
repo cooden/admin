@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>趣味测试站 - 心理测试、性格测试、星座配对 | 学生最爱</title>
+  <meta name="description" content="趣味心理测试合集：动物性格测试、生日密码、名字缘分、星座配对、你是哪种学生。免费、好玩、可分享。学生最爱！">
+  <meta name="keywords" content="心理测试,性格测试,星座配对,生日密码,名字缘分,趣味测试,学生测试">
+  <link rel="canonical" href="https://your-domain.com/students/">
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <link rel="stylesheet" href="../assets/css/student.css">
+</head>
+<body class="student-body">
+
+<main class="main">
+  <div class="container">
+
+    <section class="stu-hero">
+      <h1>🌈 趣味测试站</h1>
+      <p>超好玩的性格测试、心理测试、星座配对！全部免费，测完秒出结果</p>
+      <div class="emoji-row">🦊🐰🐱🐶🐯🐧🦉🦄</div>
+    </section>
+
+    <div id="ad-top" style="margin-bottom:24px"></div>
+
+    <h2 class="section-title">🎯 热门测试</h2>
+    <p class="section-subtitle">每个测试都超有趣，平均 3 分钟出结果</p>
+
+    <div class="test-grid">
+      <a href="animal.html" class="test-card" onclick="MTA.track('click_test', {id:'animal'})">
+        <span class="badge">热门</span>
+        <span class="emoji">🦊</span>
+        <h3>动物性格测试</h3>
+        <p class="desc">你是哪种动物？狐狸、兔子、还是老虎？12 道题告诉你答案</p>
+        <div class="meta">
+          <span>⭐ 4.8</span>
+          <span>⏱️ 3分钟</span>
+          <span>🔥 12.3万人</span>
+        </div>
+      </a>
+
+      <a href="birthday.html" class="test-card" onclick="MTA.track('click_test', {id:'birthday'})">
+        <span class="badge">新</span>
+        <span class="emoji">🎂</span>
+        <h3>生日密码</h3>
+        <p class="desc">输入生日，揭秘你的隐藏性格、幸运色、幸运数字和生日花</p>
+        <div class="meta">
+          <span>⭐ 4.7</span>
+          <span>⏱️ 1分钟</span>
+          <span>🔥 8.5万人</span>
+        </div>
+      </a>
+
+      <a href="name-fate.html" class="test-card" onclick="MTA.track('click_test', {id:'name_fate'})">
+        <span class="emoji">💞</span>
+        <h3>名字缘分测试</h3>
+        <p class="desc">输入你和 TA 的名字，测测你们的缘分分数！超准的</p>
+        <div class="meta">
+          <span>⭐ 4.9</span>
+          <span>⏱️ 1分钟</span>
+          <span>🔥 21.7万人</span>
+        </div>
+      </a>
+
+      <a href="zodiac.html" class="test-card" onclick="MTA.track('click_test', {id:'zodiac'})">
+        <span class="emoji">♈</span>
+        <h3>星座配对</h3>
+        <p class="desc">你的星座和 TA 配吗？输入两人星座看缘分指数</p>
+        <div class="meta">
+          <span>⭐ 4.6</span>
+          <span>⏱️ 1分钟</span>
+          <span>🔥 9.2万人</span>
+        </div>
+      </a>
+
+      <a href="student-type.html" class="test-card" onclick="MTA.track('click_test', {id:'student_type'})">
+        <span class="emoji">📚</span>
+        <h3>你是哪种学生</h3>
+        <p class="desc">学霸、学渣、还是隐藏的潜力股？10 道题揭晓答案</p>
+        <div class="meta">
+          <span>⭐ 4.5</span>
+          <span>⏱️ 2分钟</span>
+          <span>🔥 7.1万人</span>
+        </div>
+      </a>
+
+      <div class="test-card" style="background:linear-gradient(135deg,#fef3c7,#fde68a);cursor:default">
+        <span class="emoji">🎉</span>
+        <h3 style="color:#92400e">更多测试</h3>
+        <p class="desc" style="color:#78350f">敬请期待！每周更新新测试</p>
+        <div class="meta">
+          <span>Coming Soon</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="ad-bottom"></div>
+
+    <!-- SEO 内容 -->
+    <section style="background:rgba(255,255,255,0.7);border-radius:16px;padding:24px;margin:32px 0">
+      <h2 style="font-size:1.3rem;color:#be185d;margin-bottom:12px">为什么心理测试这么受欢迎？</h2>
+      <p style="color:var(--text-muted);line-height:1.8">
+        心理测试是年轻人最爱的娱乐方式之一。通过简单的几道题，就能了解自己的性格、爱好、潜在特质。
+        我们的学生时代少不了和同学一起做测试、对比结果、互相分享。本站所有测试都是免费的，
+        结果在浏览器本地计算，不会上传任何信息。
+      </p>
+    </section>
+
+  </div>
+</main>
+
+<script src="../assets/js/tracker.js?v=2" data-site="students"></script>
+<script src="../assets/js/common.js?v=2"></script>
+<script>
+App.mount({
+  site: 'students',
+  brand: '趣味测试站',
+  brandIcon: '🌈',
+  nav: [
+    { label: '首页', href: 'index.html' },
+    { label: '动物性格', href: 'animal.html' },
+    { label: '生日密码', href: 'birthday.html' },
+    { label: '名字缘分', href: 'name-fate.html' },
+    { label: '星座配对', href: 'zodiac.html' }
+  ],
+  footer: {
+    tools: [
+      { label: '动物性格测试', href: 'animal.html' },
+      { label: '生日密码', href: 'birthday.html' },
+      { label: '名字缘分', href: 'name-fate.html' },
+      { label: '星座配对', href: 'zodiac.html' },
+      { label: '你是哪种学生', href: 'student-type.html' }
+    ],
+    articles: []
+  }
+});
+document.getElementById('ad-top').appendChild(App.ad('leaderboard'));
+document.getElementById('ad-bottom').appendChild(App.ad('rectangle'));
+</script>
+
+</body>
+</html>

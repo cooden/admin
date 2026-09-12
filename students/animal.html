@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>动物性格测试 - 你是哪种动物？12题告诉你 | 趣味测试站</title>
+  <meta name="description" content="12道题测出你是哪种动物：狐狸、兔子、老虎、猫咪、企鹅、狮子、猫头鹰、独角兽。免费在线心理测试，3分钟出结果。">
+  <meta name="keywords" content="动物性格测试,你是哪种动物,性格测试,心理测试,动物性格">
+  <link rel="canonical" href="https://your-domain.com/students/animal.html">
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <link rel="stylesheet" href="../assets/css/student.css">
+</head>
+<body class="student-body">
+
+<main class="main">
+  <div class="container">
+    <div class="quiz-wrap">
+      <div class="quiz-header">
+        <h1>🦊 动物性格测试</h1>
+        <p>12 道趣味题，揭晓你内心是哪种动物</p>
+      </div>
+
+      <div id="quiz-content">
+        <!-- 开始页 -->
+        <div id="start-screen" style="text-align:center;padding:24px 0">
+          <div style="font-size:3.5rem;margin-bottom:16px">🦊🐰🐯🐱🦁🐧🦉🦄</div>
+          <p style="color:var(--text-muted);line-height:1.8;margin-bottom:24px;font-size:0.95rem">
+            每个人都有隐藏的动物性格！<br>
+            你是聪明机灵的狐狸，还是温柔可爱的兔子？<br>
+            是霸气侧漏的老虎，还是神秘高冷的猫头鹰？<br>
+            <br>认真回答 12 道题，3 分钟告诉你答案
+          </p>
+          <button class="btn-submit" onclick="Quiz.start()">🚀 开始测试</button>
+        </div>
+
+        <!-- 答题页 -->
+        <div id="question-screen" style="display:none">
+          <div class="quiz-progress"><div class="quiz-progress-fill" id="prog-bar"></div></div>
+          <div class="quiz-progress-text" id="prog-text"></div>
+          <div class="question-card">
+            <div class="q-num" id="q-num"></div>
+            <div class="q-text" id="q-text"></div>
+            <div class="options" id="options"></div>
+          </div>
+        </div>
+
+        <!-- 结果页 -->
+        <div id="result-screen" style="display:none"></div>
+      </div>
+
+      <div id="ad-mid" style="margin-top:24px"></div>
+    </div>
+
+    <!-- SEO 内容 -->
+    <section style="background:rgba(255,255,255,0.7);border-radius:16px;padding:24px;max-width:720px;margin:24px auto">
+      <h2 style="font-size:1.2rem;color:#be185d;margin-bottom:12px">关于动物性格测试</h2>
+      <p style="color:var(--text-muted);line-height:1.8;font-size:0.92rem">
+        动物性格测试基于人格心理学理论，将人的性格分为 8 种动物类型。每种动物代表一种性格特质：
+        狐狸代表聪明机灵，兔子代表温柔敏感，老虎代表果断有领导力，猫咪代表独立神秘，
+        企鹅代表忠诚合作，狮子代表自信霸气，猫头鹰代表智慧内向，独角兽代表创意独特。
+        本测试为趣味版本，结果仅供参考娱乐。
+      </p>
+    </section>
+  </div>
+</main>
+
+<script src="../assets/js/tracker.js?v=2" data-site="students"></script>
+<script src="../assets/js/common.js?v=2"></script>
+<script>
+var Quiz = {
+  qIndex: 0,
+  scores: {},
+  questions: [
+    { q: '周末到了，你最想做什么？',
+      options: [
+        { t: 'fox', text: 'A. 探索新地方，找点新鲜事做' },
+        { t: 'rabbit', text: 'B. 在家看书追剧，享受安静' },
+        { t: 'tiger', text: 'C. 拉上朋友一起嗨' },
+        { t: 'owl', text: 'D. 学点新东西，提升自己' } ] },
+    { q: '在班级里，你通常是？',
+      options: [
+        { t: 'lion', text: 'A. 领导者，大家听我的' },
+        { t: 'penguin', text: 'B. 团队粘合剂，爱合作' },
+        { t: 'cat', text: 'C. 独来独往，专注自己' },
+        { t: 'fox', text: 'D. 出主意的那个' } ] },
+    { q: '遇到难题时，你会？',
+      options: [
+        { t: 'fox', text: 'A. 找个聪明的办法绕过去' },
+        { t: 'owl', text: 'B. 静下心来分析思考' },
+        { t: 'tiger', text: 'C. 直接硬刚，干就完了' },
+        { t: 'rabbit', text: 'D. 找朋友帮忙' } ] },
+    { q: '你的朋友圈风格是？',
+      options: [
+        { t: 'unicorn', text: 'A. 发各种奇思妙想' },
+        { t: 'cat', text: 'B. 高冷，偶尔发一下' },
+        { t: 'penguin', text: 'C. 转发好玩的东西给大家' },
+        { t: 'rabbit', text: 'D. 记录生活小确幸' } ] },
+    { q: '选一种颜色？',
+      options: [
+        { t: 'tiger', text: 'A. 热情的红色' },
+        { t: 'rabbit', text: 'B. 温柔的粉色' },
+        { t: 'owl', text: 'C. 沉稳的深蓝' },
+        { t: 'unicorn', text: 'D. 神秘的紫色' } ] },
+    { q: '你最像哪个动漫角色？',
+      options: [
+        { t: 'fox', text: 'A. 聪明机智型，比如柯南' },
+        { t: 'cat', text: 'B. 高冷神秘型，比如杀生丸' },
+        { t: 'lion', text: 'C. 霸气热血型，比如路飞' },
+        { t: 'penguin', text: 'D. 暖心可爱型，比如哆啦A梦' } ] },
+    { q: '考试前一晚，你会？',
+      options: [
+        { t: 'owl', text: 'A. 系统复习，做笔记' },
+        { t: 'fox', text: 'B. 找重点，刷题技巧' },
+        { t: 'rabbit', text: 'C. 有点紧张，抱佛脚' },
+        { t: 'lion', text: 'D. 自信满满，该玩玩' } ] },
+    { q: '朋友难过时，你会？',
+      options: [
+        { t: 'rabbit', text: 'A. 安静陪着，给拥抱' },
+        { t: 'penguin', text: 'B. 帮他一起骂' },
+        { t: 'fox', text: 'C. 帮他找解决办法' },
+        { t: 'owl', text: 'D. 给他理性建议' } ] },
+    { q: '你心中的理想假期？',
+      options: [
+        { t: 'unicorn', text: 'A. 去陌生国度探险' },
+        { t: 'penguin', text: 'B. 和朋友一起海边玩' },
+        { t: 'rabbit', text: 'C. 山间小屋看书喝茶' },
+        { t: 'tiger', text: 'D. 极限运动挑战自己' } ] },
+    { q: '选一种食物？',
+      options: [
+        { t: 'rabbit', text: 'A. 甜品蛋糕' },
+        { t: 'fox', text: 'B. 各种小吃尝鲜' },
+        { t: 'lion', text: 'C. 大口吃肉' },
+        { t: 'owl', text: 'D. 健康轻食' } ] },
+    { q: '你最讨厌？',
+      options: [
+        { t: 'tiger', text: 'A. 被命令、被管束' },
+        { t: 'cat', text: 'B. 被打扰、被黏着' },
+        { t: 'penguin', text: 'C. 朋友之间闹矛盾' },
+        { t: 'unicorn', text: 'D. 千篇一律没新意' } ] },
+    { q: '你最希望拥有的超能力？',
+      options: [
+        { t: 'fox', text: 'A. 读心术，看穿一切' },
+        { t: 'owl', text: 'B. 时间倒流，弥补遗憾' },
+        { t: 'unicorn', text: 'C. 创造任何东西' },
+        { t: 'lion', text: 'D. 力大无穷，掌控全场' } ] }
+  ],
+
+  results: {
+    fox: { emoji: '🦊', name: '机灵狐狸', subtitle: '聪明、灵活、爱冒险',
+      desc: '你是天生的小机灵鬼，脑回路清奇又快速。别人还在思考的时候，你已经想出三个方案了。你讨厌墨守成规，喜欢探索新鲜事物，朋友有难题都爱找你出主意。但要注意：太聪明有时会让人觉得不可靠，记得偶尔也展现真诚的一面。',
+      tags: ['聪明机灵', '好奇心强', '社交达人', '思维跳跃'] },
+    rabbit: { emoji: '🐰', name: '温柔兔子', subtitle: '细腻、敏感、有爱心',
+      desc: '你有一颗柔软的心，对人对事都很温柔。你能敏锐感知别人的情绪，是朋友圈里的"小棉袄"。你喜欢安静的小确幸，一本书一杯茶就很满足。但要注意：太敏感容易受伤，要学会保护自己，该说"不"的时候要说不。',
+      tags: ['温柔细腻', '善解人意', '内敛敏感', '审美在线'] },
+    tiger: { emoji: '🐯', name: '霸气老虎', subtitle: '果断、自信、有领导力',
+      desc: '你天生有领导气质，做事雷厉风行，认准的事就一定要做到。你不喜欢拖泥带水，讨厌被管束，目标感很强。朋友们愿意追随你，但有时候你的强势会让身边的人有压力。记得听听别人的意见，不是所有人都像你一样能扛事。',
+      tags: ['果断自信', '领导气质', '行动派', '目标感强'] },
+    cat: { emoji: '🐱', name: '神秘猫咪', subtitle: '独立、高冷、有主见',
+      desc: '你像猫一样，喜欢按自己的节奏生活。独立、有主见、不随大流。别人觉得你高冷，其实你只是把热情留给少数重要的人。你不喜欢被黏着，需要自己的空间。但记得：偶尔也向在乎的人展示柔软的一面，关系会更亲密。',
+      tags: ['独立高冷', '有主见', '神秘气质', '专注自我'] },
+    penguin: { emoji: '🐧', name: '忠诚企鹅', subtitle: '友善、合作、重感情',
+      desc: '你是天生的团队型选手，重视友情和合作。你愿意为朋友两肋插刀，是大家公认靠谱的人。你喜欢有归属感的群体，讨厌孤立和冲突。但要注意：太在意别人的感受会委屈自己，记得也照顾好自己的需求。',
+      tags: ['友善忠诚', '团队核心', '重感情', '靠谱有爱'] },
+    lion: { emoji: '🦁', name: '自信狮子', subtitle: '霸气、热心、爱表现',
+      desc: '你天生是人群中的焦点，自信、大方、不怯场。你愿意承担责任，也享受被关注的感觉。你做事大气，不计较小事，朋友很多。但要注意：太爱表现会让人反感，记得给别人留些舞台。真正的王者是让别人也发光。',
+      tags: ['自信霸气', '天生焦点', '热心大方', '不计小节'] },
+    owl: { emoji: '🦉', name: '智慧猫头鹰', subtitle: '深沉、理性、有思想',
+      desc: '你是天生的思考者，喜欢深究事物的本质。你做事有规划、不冲动，读书学习都很有一套。别人觉得你内向，其实你只是在思考人生。你看待问题比同龄人成熟，但要注意：想太多容易焦虑，记得偶尔也放松一下，别太较真。',
+      tags: ['理性深思', '学习高手', '内向成熟', '规划力强'] },
+    unicorn: { emoji: '🦄', name: '创意独角兽', subtitle: '独特、浪漫、有想象',
+      desc: '你是人群中的"奇葩"，但这是褒义的！你脑子里装满奇思妙想，讨厌和别人一样。你有自己独特的审美和风格，常常做出让人惊喜的事。你追求精神层面的满足，讨厌物质化的世界。但要注意：太独特有时会孤独，记得找到懂你的小伙伴。',
+      tags: ['创意独特', '想象丰富', '不随大流', '浪漫主义'] }
+  },
+
+  start: function () {
+    this.qIndex = 0;
+    this.scores = {};
+    document.getElementById('start-screen').style.display = 'none';
+    document.getElementById('result-screen').style.display = 'none';
+    document.getElementById('question-screen').style.display = '';
+    this.showQ();
+    MTA.track('start_test', { test: 'animal' });
+  },
+
+  showQ: function () {
+    var q = this.questions[this.qIndex];
+    var pct = (this.qIndex / this.questions.length) * 100;
+    document.getElementById('prog-bar').style.width = pct + '%';
+    document.getElementById('prog-text').textContent = '第 ' + (this.qIndex + 1) + ' / ' + this.questions.length + ' 题';
+    document.getElementById('q-num').textContent = 'Question ' + (this.qIndex + 1);
+    document.getElementById('q-text').textContent = q.q;
+    var opts = q.options.map(function (o, i) {
+      return '<div class="option" onclick="Quiz.answer(\'' + o.t + '\')"><span class="letter">' + 'ABCD'[i] + '</span>' + o.text.slice(3) + '</div>';
+    }).join('');
+    document.getElementById('options').innerHTML = opts;
+  },
+
+  answer: function (type) {
+    this.scores[type] = (this.scores[type] || 0) + 1;
+    this.qIndex++;
+    if (this.qIndex < this.questions.length) {
+      this.showQ();
+    } else {
+      this.showResult();
+    }
+  },
+
+  showResult: function () {
+    document.getElementById('prog-bar').style.width = '100%';
+    document.getElementById('prog-text').textContent = '✨ 揭晓答案！';
+    // 找最高分
+    var max = 0, win = 'fox';
+    for (var t in this.scores) {
+      if (this.scores[t] > max) { max = this.scores[t]; win = t; }
+    }
+    var r = this.results[win];
+    document.getElementById('question-screen').style.display = 'none';
+    var result = document.getElementById('result-screen');
+    result.style.display = '';
+    result.innerHTML = '<div class="result-card">' +
+      '<div class="result-emoji">' + r.emoji + '</div>' +
+      '<h2>你是' + r.name + '！</h2>' +
+      '<p class="subtitle">' + r.subtitle + '</p>' +
+      '<div class="description">' + r.desc + '</div>' +
+      '<div class="tags">' + r.tags.map(function (t) { return '<span class="tag">' + t + '</span>'; }).join('') + '</div>' +
+      '<div class="result-actions">' +
+        '<button class="btn-share" onclick="Quiz.share(\'' + r.name + '\')">📤 分享结果</button>' +
+        '<a href="animal.html" class="btn-retry">🔄 再测一次</a>' +
+        '<a href="birthday.html" class="btn-retry">🎂 下一个测试</a>' +
+      '</div>' +
+      '</div>';
+    MTA.track('finish_test', { test: 'animal', result: win });
+  },
+
+  share: function (name) {
+    var text = '我测出来是' + name + '！你也来试试：' + location.href;
+    if (navigator.share) {
+      navigator.share({ title: '动物性格测试', text: text });
+    } else {
+      App.copy(text);
+      App.toast('结果已复制，快去粘贴给朋友！');
+    }
+    MTA.track('share_test', { test: 'animal', result: name });
+  }
+};
+
+App.mount({
+  site: 'students',
+  brand: '趣味测试站',
+  brandIcon: '🌈',
+  nav: [
+    { label: '首页', href: 'index.html' },
+    { label: '动物性格', href: 'animal.html' },
+    { label: '生日密码', href: 'birthday.html' },
+    { label: '名字缘分', href: 'name-fate.html' },
+    { label: '星座配对', href: 'zodiac.html' }
+  ],
+  footer: { tools: [], articles: [] }
+});
+document.getElementById('ad-mid').appendChild(App.ad('rectangle'));
+</script>
+
+</body>
+</html>

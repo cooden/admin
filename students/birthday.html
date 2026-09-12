@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>生日密码测试 - 输入生日查询你的隐藏性格 | 趣味测试站</title>
+  <meta name="description" content="输入生日，揭秘你的隐藏性格、幸运色、幸运数字、生日花、生日密码。超准的生日性格测试，1分钟出结果。">
+  <meta name="keywords" content="生日密码,生日性格,生日花,幸运色,幸运数字,生日测试">
+  <link rel="canonical" href="https://your-domain.com/students/birthday.html">
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <link rel="stylesheet" href="../assets/css/student.css">
+</head>
+<body class="student-body">
+
+<main class="main">
+  <div class="container">
+    <div class="quiz-wrap">
+      <div class="quiz-header">
+        <h1>🎂 生日密码</h1>
+        <p>输入你的生日，揭秘隐藏性格、幸运色、幸运数字、生日花</p>
+      </div>
+
+      <div class="input-form">
+        <div>
+          <label>🎂 你的生日</label>
+          <input type="date" id="birthday" max="2026-12-31" min="1950-01-01">
+        </div>
+        <button class="btn-submit" onclick="Birthday.calc()">🔮 揭秘我的密码</button>
+      </div>
+
+      <div id="result-area"></div>
+
+      <div id="ad-mid" style="margin-top:24px"></div>
+    </div>
+
+    <section style="background:rgba(255,255,255,0.7);border-radius:16px;padding:24px;max-width:720px;margin:24px auto">
+      <h2 style="font-size:1.2rem;color:#be185d;margin-bottom:12px">什么是生日密码？</h2>
+      <p style="color:var(--text-muted);line-height:1.8;font-size:0.92rem">
+        生日密码基于生命灵数和生日花理论，将生日数字相加得出 1-9 的灵数，每个数字对应不同性格特质。
+        同时每月都有对应的生日花，每段日期有对应的幸运色。这只是趣味测试，结果仅供参考娱乐。
+        想要更全面的性格分析，可以试试 <a href="animal.html" style="color:#be185d">动物性格测试</a>。
+      </p>
+    </section>
+  </div>
+</main>
+
+<script src="../assets/js/tracker.js?v=2" data-site="students"></script>
+<script src="../assets/js/common.js?v=2"></script>
+<script>
+var Birthday = {
+  // 灵数 1-9 性格
+  numbers: {
+    1: { emoji: '👑', name: '独立领袖', desc: '你天生有领导力，独立自信，喜欢开创自己的路。目标感强，敢为人先。要注意别太自我，多听听别人的意见。' },
+    2: { emoji: '🤝', name: '和平使者', desc: '你温柔细腻，善于合作，是朋友圈里的润滑剂。共情能力强，人缘好。要注意别太在意他人评价，活出自己。' },
+    3: { emoji: '🎨', name: '创意表达者', desc: '你活泼开朗，表达力强，是天生的社交达人。脑洞大、点子多，喜欢新鲜事物。要注意别三分钟热度，坚持才能成功。' },
+    4: { emoji: '🏗️', name: '稳健建设者', desc: '你踏实可靠，做事有规划，是值得信赖的人。不喜欢变动，追求稳定。要注意别太固执，偶尔变化也是好事。' },
+    5: { emoji: '🌪️', name: '自由冒险家', desc: '你热爱自由，喜欢变化和冒险，讨厌被束缚。适应力强，见多识广。要注意别太飘忽，找点能坚持的事。' },
+    6: { emoji: '💝', name: '关爱守护者', desc: '你有强烈的责任感，爱护家人朋友，是温暖的依靠。审美在线，重视和谐。要注意别太操心，给自己留点空间。' },
+    7: { emoji: '🔮', name: '智慧探索者', desc: '你深沉理性，喜欢思考人生意义，是天生的哲学家。直觉准，洞察力强。要注意别太孤僻，多和人交流。' },
+    8: { emoji: '💼', name: '成就实干家', desc: '你目标感强，有商业头脑，追求成功和物质回报。执行力强，野心大。要注意别太功利，精神层面也要照顾。' },
+    9: { emoji: '🌍', name: '理想博爱者', desc: '你心怀天下，富有同情心，关心大局和人类。想象力丰富，有艺术天赋。要注意别太好高骛远，脚踏实地。' }
+  },
+
+  // 12 个月的生日花和幸运色
+  months: [
+    { m: 1, flower: '雪花莲', color: '雪白色', colorHex: '#f8fafc', emoji: '❄️' },
+    { m: 2, flower: '樱草', color: '浅紫色', colorHex: '#e9d5ff', emoji: '🪻' },
+    { m: 3, flower: '水仙花', color: '嫩黄色', colorHex: '#fef08a', emoji: '🌼' },
+    { m: 4, flower: '雏菊', color: '粉色', colorHex: '#fbcfe8', emoji: '🌸' },
+    { m: 5, flower: '铃兰', color: '柔白色', colorHex: '#fdf2f8', emoji: '🔔' },
+    { m: 6, flower: '玫瑰', color: '玫瑰红', colorHex: '#fb7185', emoji: '🌹' },
+    { m: 7, flower: '飞燕草', color: '天蓝色', colorHex: '#7dd3fc', emoji: '🕊️' },
+    { m: 8, flower: '剑兰', color: '橙红色', colorHex: '#fb923c', emoji: '剑' },
+    { m: 9, flower: '紫菀', color: '深紫色', colorHex: '#7e22ce', emoji: '🌺' },
+    { m: 10, flower: '金盏花', color: '金黄', colorHex: '#facc15', emoji: '🌻' },
+    { m: 11, flower: '菊花', color: '琥珀色', colorHex: '#d97706', emoji: '🍂' },
+    { m: 12, flower: '水仙', color: '深绿色', colorHex: '#15803d', emoji: '🌲' }
+  ],
+
+  // 12 星座
+  zodiacs: [
+    { name: '摩羯座', emoji: '♑', start: [12, 22], end: [1, 19] },
+    { name: '水瓶座', emoji: '♒', start: [1, 20], end: [2, 18] },
+    { name: '双鱼座', emoji: '♓', start: [2, 19], end: [3, 20] },
+    { name: '白羊座', emoji: '♈', start: [3, 21], end: [4, 19] },
+    { name: '金牛座', emoji: '♉', start: [4, 20], end: [5, 20] },
+    { name: '双子座', emoji: '♊', start: [5, 21], end: [6, 21] },
+    { name: '巨蟹座', emoji: '♋', start: [6, 22], end: [7, 22] },
+    { name: '狮子座', emoji: '♌', start: [7, 23], end: [8, 22] },
+    { name: '处女座', emoji: '♍', start: [8, 23], end: [9, 22] },
+    { name: '天秤座', emoji: '♎', start: [9, 23], end: [10, 23] },
+    { name: '天蝎座', emoji: '♏', start: [10, 24], end: [11, 22] },
+    { name: '射手座', emoji: '♐', start: [11, 23], end: [12, 21] }
+  ],
+
+  getZodiac: function (m, d) {
+    for (var i = 0; i < this.zodiacs.length; i++) {
+      var z = this.zodiacs[i];
+      if (z.start[0] === 12) {  // 摩羯跨年
+        if ((m === 12 && d >= z.start[1]) || (m === 1 && d <= z.end[1])) return z;
+      } else if ((m === z.start[0] && d >= z.start[1]) || (m === z.end[0] && d <= z.end[1])) {
+        return z;
+      }
+    }
+    return this.zodiacs[0];
+  },
+
+  calc: function () {
+    var v = document.getElementById('birthday').value;
+    if (!v) { App.toast('请先输入生日哦'); return; }
+    var parts = v.split('-');
+    var y = +parts[0], m = +parts[1], d = +parts[2];
+    // 灵数：年月日所有数字相加，再降到一位
+    var allDigits = (y + '' + (m < 10 ? '0' + m : m) + (d < 10 ? '0' + d : d)).split('');
+    var sum = 0;
+    allDigits.forEach(function (c) { sum += +c; });
+    while (sum > 9) {
+      var newSum = 0;
+      ('' + sum).split('').forEach(function (c) { newSum += +c; });
+      sum = newSum;
+    }
+    // 大师数判定（11/22/33）
+    var rawSum = 0;
+    allDigits.forEach(function (c) { rawSum += +c; });
+    var isMaster = (rawSum === 11 || rawSum === 22 || rawSum === 33);
+    var num = isMaster ? rawSum : sum;
+    if (num > 9) num = sum; // 兜底
+    var n = this.numbers[sum] || this.numbers[1];
+    var monthInfo = this.months[m - 1];
+    var z = this.getZodiac(m, d);
+    // 幸运数字：日 + 月
+    var lucky = ((d + m) % 9) + 1;
+
+    var html = '<div class="result-card">' +
+      '<div class="result-emoji">' + n.emoji + '</div>' +
+      '<h2>你是' + n.name + '！</h2>' +
+      '<p class="subtitle">生日 ' + y + '年' + m + '月' + d + '日 · 灵数 ' + sum + (isMaster ? ' (大师数 ' + rawSum + ')' : '') + '</p>' +
+      '<div class="description">' + n.desc + '</div>' +
+      '<div class="stat-row">' +
+        '<div class="stat"><div class="num">' + z.emoji + '</div><div class="lbl">' + z.name + '</div></div>' +
+        '<div class="stat"><div class="num" style="color:' + monthInfo.colorHex + '">' + monthInfo.emoji + '</div><div class="lbl">生日花：' + monthInfo.flower + '</div></div>' +
+        '<div class="stat"><div class="num">' + lucky + '</div><div class="lbl">幸运数字</div></div>' +
+      '</div>' +
+      '<div class="tags">' +
+        '<span class="tag" style="background:' + monthInfo.colorHex + ';color:#475569">幸运色：' + monthInfo.color + '</span>' +
+        '<span class="tag">生日花：' + monthInfo.flower + '</span>' +
+        '<span class="tag">' + z.emoji + ' ' + z.name + '</span>' +
+        '<span class="tag">灵数 ' + sum + '</span>' +
+        '<span class="tag">幸运数字 ' + lucky + '</span>' +
+      '</div>' +
+      '<div class="result-actions">' +
+        '<button class="btn-share" onclick="Birthday.share()">📤 分享我的生日密码</button>' +
+        '<a href="animal.html" class="btn-retry">🦊 测动物性格</a>' +
+      '</div>' +
+      '</div>';
+
+    document.getElementById('result-area').innerHTML = html;
+    document.getElementById('result-area').scrollIntoView({ behavior: 'smooth' });
+    MTA.track('finish_test', { test: 'birthday', num: sum, zodiac: z.name });
+  },
+
+  share: function () {
+    var text = '我的生日密码超有趣！测测你的：' + location.href;
+    if (navigator.share) navigator.share({ title: '生日密码', text: text });
+    else { App.copy(text); App.toast('已复制链接，快去分享！'); }
+    MTA.track('share_test', { test: 'birthday' });
+  }
+};
+
+App.mount({
+  site: 'students', brand: '趣味测试站', brandIcon: '🌈',
+  nav: [
+    { label: '首页', href: 'index.html' },
+    { label: '动物性格', href: 'animal.html' },
+    { label: '生日密码', href: 'birthday.html' },
+    { label: '名字缘分', href: 'name-fate.html' },
+    { label: '星座配对', href: 'zodiac.html' }
+  ],
+  footer: { tools: [], articles: [] }
+});
+document.getElementById('ad-mid').appendChild(App.ad('rectangle'));
+</script>
+
+</body>
+</html>

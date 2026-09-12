@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>好物清单 - 精选资源合集 | 设计师工具、开发资源、学习网站推荐</title>
+  <meta name="description" content="精选优质资源合集：免费设计工具、前端开发资源、在线学习网站、效率软件推荐。所有资源亲测可用，持续更新。">
+  <meta name="keywords" content="资源合集,免费工具,设计资源,开发资源,学习网站,软件推荐">
+  <link rel="canonical" href="https://your-domain.com/resources/">
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <style>
+    .res-hero { text-align:left; padding:48px 0; border-bottom:2px solid var(--border); margin-bottom:32px; }
+    .res-hero h1 { font-size:2.2rem; margin-bottom:12px; }
+    .res-hero p { color:var(--text-muted); font-size:1.1rem; }
+    .filter-bar {
+      display:flex; gap:8px; flex-wrap:wrap; margin-bottom:32px; padding:14px;
+      background:var(--card-bg); border:1px solid var(--border); border-radius:var(--radius);
+    }
+    .filter-btn {
+      padding:6px 14px; border:1px solid var(--border); background:#fff;
+      border-radius:20px; cursor:pointer; font-size:0.85rem; color:var(--text);
+      transition:all 0.15s;
+    }
+    .filter-btn:hover { border-color:var(--primary); color:var(--primary); }
+    .filter-btn.active { background:var(--primary); color:#fff; border-color:var(--primary); }
+    .res-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:20px; }
+    .res-card {
+      background:var(--card-bg); border:1px solid var(--border); border-radius:var(--radius);
+      padding:20px; transition:all 0.2s; text-decoration:none; color:var(--text);
+      display:flex; gap:14px; align-items:flex-start;
+    }
+    .res-card:hover { transform:translateY(-3px); box-shadow:var(--shadow-lg); border-color:var(--primary); }
+    .res-card .icon {
+      width:48px; height:48px; min-width:48px; border-radius:10px;
+      display:flex; align-items:center; justify-content:center; font-size:1.5rem;
+    }
+    .res-card h3 { font-size:1rem; margin-bottom:4px; }
+    .res-card .desc { font-size:0.85rem; color:var(--text-muted); line-height:1.5; }
+    .res-card .meta { font-size:0.75rem; color:#94a3b8; margin-top:8px; display:flex; gap:10px; }
+    .res-card .meta .free { color:#10b981; }
+    .res-card .meta .paid { color:#f59e0b; }
+    .res-section { margin-bottom:48px; }
+    .res-section h2 { font-size:1.5rem; margin-bottom:8px; }
+    .res-section .count { color:var(--text-muted); font-size:0.9rem; margin-bottom:20px; }
+  </style>
+</head>
+<body>
+
+<main class="main">
+  <div class="container">
+    <section class="res-hero">
+      <h1>🎁 好物清单</h1>
+      <p>精选优质资源合集，免费设计工具、开发资源、学习网站、效率软件推荐，全部亲测可用，持续更新。</p>
+    </section>
+
+    <div id="ad-top" style="margin-bottom:24px"></div>
+
+    <div class="filter-bar">
+      <button class="filter-btn active" onclick="Filter.set('all', this)">全部</button>
+      <button class="filter-btn" onclick="Filter.set('design', this)">🎨 设计</button>
+      <button class="filter-btn" onclick="Filter.set('dev', this)">💻 开发</button>
+      <button class="filter-btn" onclick="Filter.set('learn', this)">📚 学习</button>
+      <button class="filter-btn" onclick="Filter.set('efficiency', this)">⚡ 效率</button>
+    </div>
+
+    <!-- 设计类 -->
+    <section class="res-section" id="sec-design">
+      <h2>🎨 设计资源</h2>
+      <p class="count">免费设计工具合集</p>
+      <div class="res-grid">
+        <a href="https://www.figma.com" target="_blank" rel="nofollow" class="res-card" data-cat="design" onclick="MTA.track('click_resource', {id:'figma'})">
+          <div class="icon" style="background:#fce7f3">🎨</div>
+          <div>
+            <h3>Figma</h3>
+            <p class="desc">在线协作设计工具，界面/UI/原型设计首选。免费版支持 3 个项目。</p>
+            <div class="meta"><span class="free">免费</span><span>·</span><span>figma.com</span></div>
+          </div>
+        </a>
+        <a href="https://www.canva.com" target="_blank" rel="nofollow" class="res-card" data-cat="design" onclick="MTA.track('click_resource', {id:'canva'})">
+          <div class="icon" style="background:#dbeafe">🖌️</div>
+          <div>
+            <h3>Canva</h3>
+            <p class="desc">非设计师也能用的设计工具，海报、PPT、社媒图模板丰富。</p>
+            <div class="meta"><span class="free">免费</span><span>·</span><span>canva.com</span></div>
+          </div>
+        </a>
+        <a href="https://unsplash.com" target="_blank" rel="nofollow" class="res-card" data-cat="design" onclick="MTA.track('click_resource', {id:'unsplash'})">
+          <div class="icon" style="background:#dcfce7">📷</div>
+          <div>
+            <h3>Unsplash</h3>
+            <p class="desc">高质量免费图片库，可商用，无版权困扰。每周更新。</p>
+            <div class="meta"><span class="free">免费</span><span>·</span><span>unsplash.com</span></div>
+          </div>
+        </a>
+        <a href="https://www.iconfont.cn" target="_blank" rel="nofollow" class="res-card" data-cat="design" onclick="MTA.track('click_resource', {id:'iconfont'})">
+          <div class="icon" style="background:#fef3c7">⭐</div>
+          <div>
+            <h3>iconfont</h3>
+            <p class="desc">阿里巴巴矢量图标库，海量免费 icon，支持 SVG/PNG/字体格式。</p>
+            <div class="meta"><span class="free">免费</span><span>·</span><span>iconfont.cn</span></div>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- 开发类 -->
+    <section class="res-section" id="sec-dev">
+      <h2>💻 开发资源</h2>
+      <p class="count">前端开发必备资源</p>
+      <div class="res-grid">
+        <a href="https://github.com" target="_blank" rel="nofollow" class="res-card" data-cat="dev" onclick="MTA.track('click_resource', {id:'github'})">
+          <div class="icon" style="background:#e0e7ff">🐙</div>
+          <div>
+            <h3>GitHub</h3>
+            <p class="desc">全球最大代码托管平台，开源项目、协作开发首选。</p>
+            <div class="meta"><span class="free">免费</span><span>·</span><span>github.com</span></div>
+          </div>
+        </a>
+        <a href="https://code.visualstudio.com" target="_blank" rel="nofollow" class="res-card" data-cat="dev" onclick="MTA.track('click_resource', {id:'vscode'})">
+          <div class="icon" style="background:#dbeafe">💻</div>
+          <div>
+            <h3>VS Code</h3>
+            <p class="desc">微软出品的免费代码编辑器，插件丰富，前端开发必备。</p>
+            <div class="meta"><span class="free">免费</span><span>·</span><span>code.visualstudio.com</span></div>
+          </div>
+        </a>
+        <a href="https://developer.mozilla.org" target="_blank" rel="nofollow" class="res-card" data-cat="dev" onclick="MTA.track('click_resource', {id:'mdn'})">
+          <div class="icon" style="background:#fef3c7">📖</div>
+          <div>
+            <h3>MDN Web Docs</h3>
+            <p class="desc">Mozilla 出品的 Web 技术文档，前端学习权威参考。</p>
+            <div class="meta"><span class="free">免费</span><span>·</span><span>developer.mozilla.org</span></div>
+          </div>
+        </a>
+        <a href="../tools/index.html" class="res-card" data-cat="dev" onclick="MTA.track('click_resource', {id:'tools'})">
+          <div class="icon" style="background:#fce7f3">🛠️</div>
+          <div>
+            <h3>实用工具箱</h3>
+            <p class="desc">本站出品的在线工具合集，JSON 格式化、单位转换、密码生成等。</p>
+            <div class="meta"><span class="free">免费</span><span>·</span><span>本站</span></div>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- 学习类 -->
+    <section class="res-section" id="sec-learn">
+      <h2>📚 学习资源</h2>
+      <p class="count">免费在线学习平台</p>
+      <div class="res-grid">
+        <a href="https://www.coursera.org" target="_blank" rel="nofollow" class="res-card" data-cat="learn" onclick="MTA.track('click_resource', {id:'coursera'})">
+          <div class="icon" style="background:#dbeafe">🎓</div>
+          <div>
+            <h3>Coursera</h3>
+            <p class="desc">全球顶尖大学课程在线学习，部分免费旁听，结业证书付费。</p>
+            <div class="meta"><span class="free">免费旁听</span><span>·</span><span>coursera.org</span></div>
+          </div>
+        </a>
+        <a href="https://www.bilibili.com" target="_blank" rel="nofollow" class="res-card" data-cat="learn" onclick="MTA.track('click_resource', {id:'bilibili'})">
+          <div class="icon" style="background:#fce7f3">📺</div>
+          <div>
+            <h3>哔哩哔哩</h3>
+            <p class="desc">不只是视频网站，海量免费学习资源，编程、设计、英语等。</p>
+            <div class="meta"><span class="free">免费</span><span>·</span><span>bilibili.com</span></div>
+          </div>
+        </a>
+        <a href="https://www.khanacademy.org" target="_blank" rel="nofollow" class="res-card" data-cat="learn" onclick="MTA.track('click_resource', {id:'khan'})">
+          <div class="icon" style="background:#fef3c7">📐</div>
+          <div>
+            <h3>Khan Academy</h3>
+            <p class="desc">可汗学院，免费数学、科学、经济等学科系统课程。</p>
+            <div class="meta"><span class="free">免费</span><span>·</span><span>khanacademy.org</span></div>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- 效率类 -->
+    <section class="res-section" id="sec-efficiency">
+      <h2>⚡ 效率工具</h2>
+      <p class="count">提升工作学习效率的软件</p>
+      <div class="res-grid">
+        <a href="https://notion.so" target="_blank" rel="nofollow" class="res-card" data-cat="efficiency" onclick="MTA.track('click_resource', {id:'notion'})">
+          <div class="icon" style="background:#e0e7ff">📝</div>
+          <div>
+            <h3>Notion</h3>
+            <p class="desc">All-in-one 工作空间，笔记、任务、数据库、wiki 一站搞定。</p>
+            <div class="meta"><span class="free">免费</span><span>·</span><span>notion.so</span></div>
+          </div>
+        </a>
+        <a href="https://todoist.com" target="_blank" rel="nofollow" class="res-card" data-cat="efficiency" onclick="MTA.track('click_resource', {id:'todoist'})">
+          <div class="icon" style="background:#dcfce7">✅</div>
+          <div>
+            <h3>Todoist</h3>
+            <p class="desc">简洁强大的待办清单，跨平台同步，自然语言输入任务。</p>
+            <div class="meta"><span class="free">免费版</span><span>·</span><span>todoist.com</span></div>
+          </div>
+        </a>
+        <a href="https://www.grammarly.com" target="_blank" rel="nofollow" class="res-card" data-cat="efficiency" onclick="MTA.track('click_resource', {id:'grammarly'})">
+          <div class="icon" style="background:#fef3c7">✍️</div>
+          <div>
+            <h3>Grammarly</h3>
+            <p class="desc">英文写作语法检查，浏览器插件即用，留学/职场必备。</p>
+            <div class="meta"><span class="free">免费版</span><span>·</span><span>grammarly.com</span></div>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <div id="ad-bottom"></div>
+  </div>
+</main>
+
+<script src="../assets/js/tracker.js?v=2" data-site="resources"></script>
+<script src="../assets/js/common.js?v=2"></script>
+<script>
+var Filter = {
+  set: function (cat, btn) {
+    document.querySelectorAll('.filter-btn').forEach(function (b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    document.querySelectorAll('.res-card').forEach(function (c) {
+      var match = cat === 'all' || c.dataset.cat === cat;
+      c.style.display = match ? '' : 'none';
+    });
+    document.querySelectorAll('.res-section').forEach(function (s) {
+      var cards = s.querySelectorAll('.res-card');
+      var visible = Array.from(cards).filter(function (c) { return c.style.display !== 'none'; });
+      s.style.display = visible.length ? '' : 'none';
+    });
+    MTA.track('filter_resources', { cat: cat });
+  }
+};
+
+App.mount({
+  site: 'resources',
+  brand: '好物清单',
+  brandIcon: '🎁',
+  nav: [
+    { label: '首页', href: 'index.html' },
+    { label: '设计', href: '#sec-design' },
+    { label: '开发', href: '#sec-dev' },
+    { label: '学习', href: '#sec-learn' },
+    { label: '效率', href: '#sec-efficiency' }
+  ],
+  footer: { tools: [], articles: [] }
+});
+document.getElementById('ad-top').appendChild(App.ad('leaderboard'));
+document.getElementById('ad-bottom').appendChild(App.ad('rectangle'));
+</script>
+
+</body>
+</html>

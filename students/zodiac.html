@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>星座配对测试 - 你们的星座配吗？ | 趣味测试站</title>
+  <meta name="description" content="12星座配对测试：你的星座和TA配吗？输入两人星座，立即得出配对指数、性格分析、相处建议。免费，1分钟出结果。">
+  <meta name="keywords" content="星座配对,星座测试,配对指数,十二星座,星座缘分">
+  <link rel="canonical" href="https://your-domain.com/students/zodiac.html">
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <link rel="stylesheet" href="../assets/css/student.css">
+</head>
+<body class="student-body">
+
+<main class="main">
+  <div class="container">
+    <div class="quiz-wrap">
+      <div class="quiz-header">
+        <h1>♈ 星座配对测试</h1>
+        <p>你的星座和 TA 配吗？输入两人星座揭晓答案</p>
+      </div>
+
+      <div class="input-form">
+        <div class="zodiac-pair">
+          <div>
+            <label>你的星座</label>
+            <select id="z1">
+              <option value="白羊座">♈ 白羊座</option>
+              <option value="金牛座">♉ 金牛座</option>
+              <option value="双子座">♊ 双子座</option>
+              <option value="巨蟹座">♋ 巨蟹座</option>
+              <option value="狮子座">♌ 狮子座</option>
+              <option value="处女座">♍ 处女座</option>
+              <option value="天秤座">♎ 天秤座</option>
+              <option value="天蝎座">♏ 天蝎座</option>
+              <option value="射手座">♐ 射手座</option>
+              <option value="摩羯座">♑ 摩羯座</option>
+              <option value="水瓶座">♒ 水瓶座</option>
+              <option value="双鱼座">♓ 双鱼座</option>
+            </select>
+          </div>
+          <div class="heart">💕</div>
+          <div>
+            <label>TA 的星座</label>
+            <select id="z2">
+              <option value="白羊座">♈ 白羊座</option>
+              <option value="金牛座">♉ 金牛座</option>
+              <option value="双子座">♊ 双子座</option>
+              <option value="巨蟹座">♋ 巨蟹座</option>
+              <option value="狮子座">♌ 狮子座</option>
+              <option value="处女座">♍ 处女座</option>
+              <option value="天秤座">♎ 天秤座</option>
+              <option value="天蝎座">♏ 天蝎座</option>
+              <option value="射手座">♐ 射手座</option>
+              <option value="摩羯座">♑ 摩羯座</option>
+              <option value="水瓶座">♒ 水瓶座</option>
+              <option value="双鱼座">♓ 双鱼座</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn-submit" onclick="Zodiac.calc()">💞 测配对指数</button>
+      </div>
+
+      <div id="result-area"></div>
+
+      <div id="ad-mid" style="margin-top:24px"></div>
+    </div>
+
+    <section style="background:rgba(255,255,255,0.7);border-radius:16px;padding:24px;max-width:720px;margin:24px auto">
+      <h2 style="font-size:1.2rem;color:#be185d;margin-bottom:12px">关于星座配对</h2>
+      <p style="color:var(--text-muted);line-height:1.8;font-size:0.92rem">
+        星座配对基于西方占星学的四象（火、土、风、水）理论。
+        通常同象星座相处融洽，相邻象（如风象+火象）也能擦出火花，对宫星座（如白羊-天秤）则有强烈吸引力。
+        本测试为趣味版本，结果仅供参考娱乐。真正的感情还是要看两个人的相处。
+        想测名字缘分？<a href="name-fate.html" style="color:#be185d">点这里</a>。
+      </p>
+    </section>
+  </div>
+</main>
+
+<script src="../assets/js/tracker.js?v=2" data-site="students"></script>
+<script src="../assets/js/common.js?v=2"></script>
+<script>
+var Zodiac = {
+  // 12 星座元素
+  element: {
+    '白羊座': 'fire', '狮子座': 'fire', '射手座': 'fire',
+    '金牛座': 'earth', '处女座': 'earth', '摩羯座': 'earth',
+    '双子座': 'air', '天秤座': 'air', '水瓶座': 'air',
+    '巨蟹座': 'water', '天蝎座': 'water', '双鱼座': 'water'
+  },
+
+  emojis: {
+    '白羊座': '♈', '金牛座': '♉', '双子座': '♊', '巨蟹座': '♋',
+    '狮子座': '♌', '处女座': '♍', '天秤座': '♎', '天蝎座': '♏',
+    '射手座': '♐', '摩羯座': '♑', '水瓶座': '♒', '双鱼座': '♓'
+  },
+
+  // 计算配对分
+  calcScore: function (z1, z2) {
+    var e1 = this.element[z1], e2 = this.element[z2];
+    if (z1 === z2) return { score: 75, level: '同象同位', desc: '你们是同一星座，太巧了！彼此太了解了，相处轻松但少了些新鲜感。试试一起尝试新事物，让关系保鲜。' };
+    // 同象 90
+    if (e1 === e2) return { score: 90, level: '同象相合', desc: '你们属于同象星座，气场相合！性格底色接近，理解对方毫不费力。是天作之合的基础，但要小心太相似会让火花变少。' };
+    // 火土、风水互补 65
+    if ((e1 === 'fire' && e2 === 'earth') || (e1 === 'earth' && e2 === 'fire')) return { score: 65, level: '需磨合', desc: '火与土的组合，一个热情一个务实。开始可能不太搭，但互补性强。火给土带来活力，土给火提供落地，磨合好就是黄金搭档。' };
+    if ((e1 === 'air' && e2 === 'water') || (e1 === 'water' && e2 === 'air')) return { score: 65, level: '需磨合', desc: '风与水的组合，理性与感性的对话。开始会有不理解，但能互相学习。风教水理性思考，水教风感受情绪，是成长型组合。' };
+    // 火风相助 85
+    if ((e1 === 'fire' && e2 === 'air') || (e1 === 'air' && e2 === 'fire')) return { score: 85, level: '相互激发', desc: '火与风的组合，相互激发！风助火势，火给风方向。你们在一起总有聊不完的话题、做不完的事，活力满满。但要注意别太飘，记得落地。' };
+    // 土水相助 80
+    if ((e1 === 'earth' && e2 === 'water') || (e1 === 'water' && e2 === 'earth')) return { score: 80, level: '滋养稳定', desc: '土与水的组合，相互滋养。土为水提供依靠，水滋润土的干涸。你们的关系温暖稳定，是细水长流的类型。' };
+    return { score: 70, level: '缘分待培养', desc: '你们的星座组合需要更多磨合。但星座只是参考，关键还是两个人的用心经营。多沟通、多包容，缘分是可以培养的。' };
+  },
+
+  calc: function () {
+    var z1 = document.getElementById('z1').value;
+    var z2 = document.getElementById('z2').value;
+    var r = this.calcScore(z1, z2);
+    var emoji1 = this.emojis[z1], emoji2 = this.emojis[z2];
+    var verdict, emoji;
+    if (r.score >= 85) { verdict = '天作之合！'; emoji = '💖'; }
+    else if (r.score >= 75) { verdict = '非常相配'; emoji = '💕'; }
+    else if (r.score >= 65) { verdict = '需要磨合'; emoji = '💛'; }
+    else { verdict = '缘分待培养'; emoji = '💙'; }
+
+    var html = '<div class="result-card">' +
+      '<div style="font-size:2.2rem;margin-bottom:8px">' + emoji1 + ' ' + emoji + ' ' + emoji2 + '</div>' +
+      '<div class="score-circle">' + r.score + '</div>' +
+      '<h2>' + verdict + '</h2>' +
+      '<p class="subtitle">' + z1 + ' × ' + z2 + ' · ' + r.level + '</p>' +
+      '<div class="description">' + r.desc + '</div>' +
+      '<div class="tags">' +
+        '<span class="tag">' + z1 + '</span>' +
+        '<span class="tag">' + z2 + '</span>' +
+        '<span class="tag">配对 ' + r.score + ' 分</span>' +
+        '<span class="tag">' + r.level + '</span>' +
+      '</div>' +
+      '<div class="result-actions">' +
+        '<button class="btn-share" onclick="Zodiac.share()">📤 分享配对结果</button>' +
+        '<a href="name-fate.html" class="btn-retry">💞 测名字缘分</a>' +
+      '</div>' +
+      '</div>';
+
+    document.getElementById('result-area').innerHTML = html;
+    document.getElementById('result-area').scrollIntoView({ behavior: 'smooth' });
+    MTA.track('finish_test', { test: 'zodiac', z1: z1, z2: z2, score: r.score });
+  },
+
+  share: function () {
+    var z1 = document.getElementById('z1').value;
+    var z2 = document.getElementById('z2').value;
+    var text = '我测了' + z1 + '和' + z2 + '的配对指数！你也来：' + location.href;
+    if (navigator.share) navigator.share({ title: '星座配对测试', text: text });
+    else { App.copy(text); App.toast('已复制，快分享给TA！'); }
+    MTA.track('share_test', { test: 'zodiac' });
+  }
+};
+
+App.mount({
+  site: 'students', brand: '趣味测试站', brandIcon: '🌈',
+  nav: [
+    { label: '首页', href: 'index.html' },
+    { label: '动物性格', href: 'animal.html' },
+    { label: '生日密码', href: 'birthday.html' },
+    { label: '名字缘分', href: 'name-fate.html' },
+    { label: '星座配对', href: 'zodiac.html' }
+  ],
+  footer: { tools: [], articles: [] }
+});
+document.getElementById('ad-mid').appendChild(App.ad('rectangle'));
+</script>
+
+</body>
+</html>

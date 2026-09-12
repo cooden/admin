@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>流量监测面板 - 多站点对比</title>
+  <meta name="robots" content="noindex">
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    /* Dashboard 专属样式 */
+    .dash-header {
+      background: linear-gradient(135deg, #1e293b, #334155);
+      color: #fff;
+      padding: 24px 0;
+      margin-bottom: 24px;
+    }
+    .dash-header .container { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+    .dash-header h1 { font-size: 1.5rem; display: flex; align-items: center; gap: 10px; }
+    .dash-header .live-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: #10b981; display: inline-block;
+      box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+      70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+    .refresh-btn {
+      background: rgba(255,255,255,0.15); color: #fff; border: 1px solid rgba(255,255,255,0.3);
+      padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 0.85rem;
+    }
+    .refresh-btn:hover { background: rgba(255,255,255,0.25); }
+
+    .site-tabs {
+      display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px;
+      border-bottom: 2px solid var(--border); padding-bottom: 0;
+    }
+    .site-tab {
+      padding: 10px 18px; cursor: pointer; border: none; background: transparent;
+      font-size: 0.95rem; color: var(--text-muted); border-bottom: 3px solid transparent;
+      margin-bottom: -2px; font-weight: 500; border-radius: 6px 6px 0 0;
+    }
+    .site-tab.active { color: var(--primary); border-bottom-color: var(--primary); background: #eef2ff; }
+    .site-tab:hover { color: var(--primary); }
+
+    .site-badge {
+      display: inline-block; font-size: 0.7rem; padding: 2px 8px;
+      background: var(--border); color: var(--text-muted); border-radius: 10px;
+      margin-left: 6px;
+    }
+
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+    @media (max-width: 768px) { .two-col { grid-template-columns: 1fr; } }
+
+    .empty-state {
+      text-align: center; padding: 60px 20px; color: var(--text-muted);
+    }
+    .empty-state .icon { font-size: 3rem; margin-bottom: 12px; }
+    .compare-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    .compare-table th, .compare-table td {
+      padding: 12px; text-align: left; border-bottom: 1px solid var(--border);
+    }
+    .compare-table th { background: #f8fafc; font-weight: 600; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; }
+    .compare-table tr:hover { background: #f8fafc; }
+    .compare-table .winner { color: var(--success); font-weight: 600; }
+    .compare-table .bar-cell { min-width: 120px; }
+    .mini-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin-top: 4px; }
+    .mini-bar-fill { height: 100%; background: var(--primary); border-radius: 3px; }
+
+    .insight {
+      background: linear-gradient(135deg, #fffbeb, #fef3c7);
+      border: 1px solid #fde68a;
+      border-radius: var(--radius);
+      padding: 16px 20px; margin-bottom: 24px;
+      display: flex; gap: 12px; align-items: flex-start;
+    }
+    .insight .icon { font-size: 1.5rem; }
+    .insight p { margin: 0; font-size: 0.9rem; color: #92400e; }
+    .insight strong { color: #78350f; }
+  </style>
+</head>
+<body>
+
+<header class="dash-header">
+  <div class="container">
+    <h1><span class="live-dot"></span>流量监测面板</h1>
+    <div>
+      <button class="refresh-btn" onclick="Dashboard.refresh()">↻ 刷新数据</button>
+      <span style="margin-left:12px;font-size:0.85rem;opacity:0.8" id="last-update">尚未加载</span>
+    </div>
+  </div>
+</header>
+
+<main class="container main">
+
+  <!-- 多站点对比表 -->
+  <div class="chart-card" style="margin-bottom:32px">
+    <h3>📊 多站点流量对比</h3>
+    <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:16px">对比 5 个不同形态站点的流量表现，数据驱动决定重点运营哪个。</p>
+    <div style="overflow-x:auto">
+      <table class="compare-table" id="compare-table">
+        <thead>
+          <tr>
+            <th>站点</th>
+            <th>类型</th>
+            <th>总 PV</th>
+            <th>总 UV</th>
+            <th>会话数</th>
+            <th>今日 PV</th>
+            <th>趋势</th>
+          </tr>
+        </thead>
+        <tbody id="compare-body">
+          <tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-muted)">加载中...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 洞察 -->
+  <div class="insight" id="insight-box" style="display:none">
+    <div class="icon">💡</div>
+    <p id="insight-text"></p>
+  </div>
+
+  <!-- 站点切换 -->
+  <div class="site-tabs" id="site-tabs"></div>
+
+  <!-- 单站点详细统计 -->
+  <div id="site-detail">
+    <div class="stats-grid" id="stat-cards"></div>
+
+    <div class="two-col">
+      <div class="chart-card">
+        <h3>📈 每日 PV / UV 趋势</h3>
+        <div class="chart-container"><canvas id="chart-trend"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <h3>🌐 流量来源分布</h3>
+        <div class="chart-container"><canvas id="chart-source"></canvas></div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="chart-card">
+        <h3>📄 热门页面 Top 10</h3>
+        <ul class="top-list" id="top-pages"></ul>
+      </div>
+      <div class="chart-card">
+        <h3>⚡ 用户行为事件</h3>
+        <ul class="top-list" id="top-events"></ul>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <h3>⏱ 平均停留时长 (秒)</h3>
+      <div class="chart-container"><canvas id="chart-duration"></canvas></div>
+    </div>
+  </div>
+
+</main>
+
+<script src="../assets/js/tracker.js?v=2" data-site="dashboard"></script>
+<script>
+/**
+ * 流量监测面板逻辑
+ *
+ * 数据来源说明：
+ * - 本地部署：通过 localStorage 读取各站点 tracker.js?v=2 上报的数据
+ *   （跨子域时通过 postMessage 请求，需 dashboard 嵌入各站点 iframe）
+ * - 多域部署：各站点 tracker.js?v=2 配置 endpoint 上报后端，
+ *   dashboard 调用后端 API 聚合（fetch 接口需自行实现）
+ *
+ * 当前实现：本地 localStorage 模式（开发期即可查看完整面板）。
+ * 同时通过 iframe + postMessage 拉取各站点数据（如果同域部署）。
+ */
+var Dashboard = {
+  sites: [
+    { id: 'tools', name: '实用工具站', type: '工具类', url: '../tools/', color: '#4f46e5' },
+    { id: 'blog', name: '知识内容站', type: '内容类', url: '../blog/', color: '#10b981' },
+    { id: 'resources', name: '资源聚合站', type: '资源类', url: '../resources/', color: '#f59e0b' },
+    { id: 'reviews', name: '对比测评站', type: '测评类', url: '../reviews/', color: '#ef4444' },
+    { id: 'students', name: '趣味测试站', type: '测试类', url: '../students/', color: '#ec4899' }
+  ],
+  current: 'tools',
+  charts: {},
+
+  today: function () {
+    var d = new Date();
+    return d.getFullYear() + '-' +
+      String(d.getMonth() + 1).padStart(2, '0') + '-' +
+      String(d.getDate()).padStart(2, '0');
+  },
+
+  // 读取某站点的本地存储数据
+  readSite: function (siteId) {
+    try {
+      return JSON.parse(localStorage.getItem('mta_store_' + siteId) || '{}');
+    } catch (e) { return {}; }
+  },
+
+  // ===== 跨域拉取：通过隐藏 iframe + postMessage =====
+  fetchRemote: function (site, cb) {
+    var frame = document.createElement('iframe');
+    frame.style.display = 'none';
+    frame.src = site.url + 'index.html?mta_fetch=1';
+    var done = false;
+    function finish(data) {
+      if (done) return; done = true;
+      clearTimeout(timer);
+      frame.remove();
+      cb(data);
+    }
+    var timer = setTimeout(function () { finish(null); }, 4000);
+    window.addEventListener('message', function handler(e) {
+      if (e.data && e.data.type === 'mta_data' && e.data.site === site.id) {
+        window.removeEventListener('message', handler);
+        finish(e.data.store);
+      }
+    });
+    frame.onload = function () {
+      frame.contentWindow.postMessage({ type: 'mta_fetch' }, '*');
+    };
+    document.body.appendChild(frame);
+  },
+
+  // 聚合所有站点数据
+  loadAll: function (cb) {
+    var results = {};
+    var pending = this.sites.length;
+    var self = this;
+    this.sites.forEach(function (site) {
+      // 优先用本地存储（同域直接读）
+      var local = self.readSite(site.id);
+      if (local && local.total) {
+        results[site.id] = local;
+        if (--pending === 0) cb(results);
+      } else {
+        // 尝试通过 iframe 拉取
+        self.fetchRemote(site, function (data) {
+          if (data) results[site.id] = data;
+          else results[site.id] = { total: { pv: 0, uv: 0, sessions: 0 }, daily: {}, pages: {}, refs: {}, events: {} };
+          if (--pending === 0) cb(results);
+        });
+      }
+    });
+  },
+
+  render: function () {
+    var self = this;
+    this.loadAll(function (data) {
+      self.data = data;
+      self.renderCompareTable();
+      self.renderTabs();
+      self.renderSiteDetail();
+      document.getElementById('last-update').textContent = '更新于 ' + new Date().toLocaleTimeString('zh-CN');
+    });
+  },
+
+  // 对比表
+  renderCompareTable: function () {
+    var tbody = document.getElementById('compare-body');
+    tbody.innerHTML = '';
+    var maxPV = 0;
+    var winner = null;
+    this.sites.forEach(function (site) {
+      var d = this.data[site.id] || {};
+      var total = d.total || { pv: 0, uv: 0, sessions: 0 };
+      var todayData = (d.daily || {})[this.today()] || { pv: 0, uv: 0 };
+      if (total.pv > maxPV) { maxPV = total.pv; winner = site.id; }
+      var tr = document.createElement('tr');
+      tr.innerHTML =
+        '<td><a href="' + site.url + '" target="_blank" style="color:' + site.color + ';font-weight:600">' + site.name + '</a></td>' +
+        '<td>' + site.type + '</td>' +
+        '<td>' + (total.pv || 0).toLocaleString() + '</td>' +
+        '<td>' + (total.uv || 0).toLocaleString() + '</td>' +
+        '<td>' + (total.sessions || 0).toLocaleString() + '</td>' +
+        '<td>' + (todayData.pv || 0).toLocaleString() + '</td>' +
+        '<td class="bar-cell"><div class="mini-bar"><div class="mini-bar-fill" style="width:' + (maxPV ? Math.round(total.pv / maxPV * 100) : 0) + '%;background:' + site.color + '"></div></div></td>';
+      tbody.appendChild(tr);
+    }, this);
+
+    // 洞察
+    if (winner && maxPV > 0) {
+      var ws = this.sites.filter(function (s) { return s.id === winner; })[0];
+      var insight = '目前 <strong>' + ws.name + '</strong>（' + ws.type + '）流量最高，总 PV ' + maxPV + '。' +
+        (maxPV > 100 ? '建议重点运营该站点，增加内容更新频率。' : '各站点流量都还较少，继续观察 SEO 收录情况，2-4 周后再做判断。');
+      document.getElementById('insight-text').innerHTML = insight;
+      document.getElementById('insight-box').style.display = 'flex';
+    } else {
+      document.getElementById('insight-box').style.display = 'none';
+    }
+  },
+
+  renderTabs: function () {
+    var tabs = document.getElementById('site-tabs');
+    tabs.innerHTML = '';
+    var self = this;
+    this.sites.forEach(function (site) {
+      var d = self.data[site.id] || {};
+      var total = d.total || { pv: 0 };
+      var btn = document.createElement('button');
+      btn.className = 'site-tab' + (site.id === self.current ? ' active' : '');
+      btn.innerHTML = site.name + '<span class="site-badge">' + (total.pv || 0) + ' PV</span>';
+      btn.onclick = function () {
+        self.current = site.id;
+        self.renderTabs();
+        self.renderSiteDetail();
+      };
+      tabs.appendChild(btn);
+    });
+  },
+
+  renderSiteDetail: function () {
+    var d = this.data[this.current] || {};
+    var total = d.total || { pv: 0, uv: 0, sessions: 0 };
+    var todayData = (d.daily || {})[this.today()] || { pv: 0, uv: 0, sessions: 0 };
+    var yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
+    var yKey = yesterday.getFullYear() + '-' + String(yesterday.getMonth() + 1).padStart(2, '0') + '-' + String(yesterday.getDate()).padStart(2, '0');
+    var yData = (d.daily || {})[yKey] || { pv: 0 };
+    var trend = yData.pv ? Math.round((todayData.pv - yData.pv) / yData.pv * 100) : 0;
+
+    // 统计卡片
+    var cards = [
+      { label: '今日 PV', value: todayData.pv || 0, trend: trend >= 0 ? '↑ ' + trend + '%' : '↓ ' + Math.abs(trend) + '%', up: trend >= 0 },
+      { label: '今日 UV', value: todayData.uv || 0, trend: '独立访客' },
+      { label: '总 PV', value: total.pv || 0, trend: '累计浏览量' },
+      { label: '总 UV', value: total.uv || 0, trend: '累计访客' },
+      { label: '总会话', value: total.sessions || 0, trend: '访问会话' },
+      { label: '平均停留', value: this.avgDuration(d) + 's', trend: '所有页面均值' }
+    ];
+    document.getElementById('stat-cards').innerHTML = cards.map(function (c) {
+      return '<div class="stat-card"><div class="stat-label">' + c.label + '</div>' +
+        '<div class="stat-value">' + (c.value || 0).toLocaleString() + '</div>' +
+        '<div class="stat-trend' + (c.up === false ? ' down' : '') + '">' + c.trend + '</div></div>';
+    }).join('');
+
+    // 趋势图
+    this.renderTrendChart(d);
+    // 来源图
+    this.renderSourceChart(d);
+    // 热门页面
+    this.renderTopPages(d);
+    // 事件
+    this.renderTopEvents(d);
+    // 时长图
+    this.renderDurationChart(d);
+  },
+
+  avgDuration: function (d) {
+    if (!d.pages) return 0;
+    var sum = 0, n = 0;
+    Object.keys(d.pages).forEach(function (k) {
+      if (d.pages[k].avgDur) { sum += d.pages[k].avgDur; n++; }
+    });
+    return n ? Math.round(sum / n) : 0;
+  },
+
+  // 最近 14 天
+  last14Days: function () {
+    var days = [];
+    for (var i = 13; i >= 0; i--) {
+      var d = new Date(); d.setDate(d.getDate() - i);
+      days.push(d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'));
+    }
+    return days;
+  },
+
+  renderTrendChart: function (d) {
+    var days = this.last14Days();
+    var pvs = days.map(function (day) { return ((d.daily || {})[day] || {}).pv || 0; });
+    var uvs = days.map(function (day) { return ((d.daily || {})[day] || {}).uv || 0; });
+    var labels = days.map(function (day) { return day.slice(5); });
+    this.drawChart('chart-trend', 'line', {
+      labels: labels,
+      datasets: [
+        { label: 'PV', data: pvs, borderColor: '#4f46e5', backgroundColor: 'rgba(79,70,229,0.1)', fill: true, tension: 0.3 },
+        { label: 'UV', data: uvs, borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', fill: true, tension: 0.3 }
+      ]
+    });
+  },
+
+  renderSourceChart: function (d) {
+    var refs = d.refs || {};
+    var labels = Object.keys(refs).slice(0, 8);
+    var data = labels.map(function (k) { return refs[k].pv || 0; });
+    this.drawChart('chart-source', 'doughnut', {
+      labels: labels.length ? labels : ['暂无数据'],
+      datasets: [{ data: data.length ? data : [1], backgroundColor: ['#4f46e5','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4','#ec4899','#14b8a6'] }]
+    });
+  },
+
+  renderTopPages: function (d) {
+    var pages = d.pages || {};
+    var list = Object.keys(pages).map(function (k) { return { path: k, pv: pages[k].pv || 0, dur: pages[k].avgDur || 0 }; });
+    list.sort(function (a, b) { return b.pv - a.pv; });
+    list = list.slice(0, 10);
+    var max = list[0] ? list[0].pv : 1;
+    var ul = document.getElementById('top-pages');
+    if (!list.length) { ul.innerHTML = '<li style="color:var(--text-muted);text-align:center;padding:20px">暂无数据</li>'; return; }
+    ul.innerHTML = list.map(function (p, i) {
+      return '<li><span><span class="rank">' + (i + 1) + '</span>' + p.path + '</span>' +
+        '<div class="bar"><div class="bar-fill" style="width:' + Math.round(p.pv / max * 100) + '%"></div></div>' +
+        '<span>' + p.pv + ' PV / ' + (p.dur || 0) + 's</span></li>';
+    }).join('');
+  },
+
+  renderTopEvents: function (d) {
+    var events = d.events || {};
+    var list = Object.keys(events).map(function (k) {
+      var p = k.split('|');
+      return { event: p[0], date: p[1], count: events[k].count, uv: events[k].uv || 0 };
+    });
+    list.sort(function (a, b) { return b.count - a.count; });
+    list = list.slice(0, 10);
+    var ul = document.getElementById('top-events');
+    if (!list.length) { ul.innerHTML = '<li style="color:var(--text-muted);text-align:center;padding:20px">暂无事件数据<br><small style="color:#94a3b8">用户使用工具时会记录行为事件</small></li>'; return; }
+    var max = list[0].count;
+    ul.innerHTML = list.map(function (e, i) {
+      return '<li><span><span class="rank">' + (i + 1) + '</span>' + e.event + '</span>' +
+        '<div class="bar"><div class="bar-fill" style="width:' + Math.round(e.count / max * 100) + '%"></div></div>' +
+        '<span>' + e.count + ' 次 / ' + e.uv + ' UV</span></li>';
+    }).join('');
+  },
+
+  renderDurationChart: function (d) {
+    var pages = d.pages || {};
+    var list = Object.keys(pages).filter(function (k) { return pages[k].avgDur; })
+      .map(function (k) { return { path: k, dur: pages[k].avgDur }; });
+    list.sort(function (a, b) { return b.dur - a.dur; });
+    list = list.slice(0, 8);
+    this.drawChart('chart-duration', 'bar', {
+      labels: list.length ? list.map(function (p) { return p.path; }) : ['暂无数据'],
+      datasets: [{ label: '平均停留(秒)', data: list.length ? list.map(function (p) { return p.dur; }) : [0], backgroundColor: '#8b5cf6' }]
+    }, { indexAxis: 'y' });
+  },
+
+  // Chart.js 封装
+  drawChart: function (id, type, data, opts) {
+    var ctx = document.getElementById(id);
+    if (!ctx) return;
+    if (this.charts[id]) this.charts[id].destroy();
+    this.charts[id] = new Chart(ctx.getContext('2d'), {
+      type: type,
+      data: data,
+      options: Object.assign({
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } },
+        scales: type === 'doughnut' ? {} : { y: { beginAtZero: true, ticks: { font: { size: 11 } } }, x: { ticks: { font: { size: 11 } } } }
+      }, opts || {})
+    });
+  },
+
+  refresh: function () { this.render(); }
+};
+
+Dashboard.render();
+// 每 60 秒自动刷新
+setInterval(function () { Dashboard.refresh(); }, 60000);
+</script>
+
+</body>
+</html>
