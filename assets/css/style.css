@@ -569,3 +569,31 @@ input[type="range"] {
   .footer-grid { grid-template-columns: 1fr; }
   .stats-grid { grid-template-columns: 1fr; }
 }
+
+/* ===== 兄弟站点推荐（替代空广告位） ===== */
+.sibling-slot { display: flex; gap: 12px; flex-wrap: wrap; }
+.ad-sidebar .sibling-slot { flex-direction: column; }
+.sibling-card {
+  display: flex; align-items: center; gap: 12px;
+  flex: 1; min-width: 0;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, #eef2ff, #f5f3ff);
+  border: 1px solid #e0e7ff;
+  border-radius: 10px;
+  text-decoration: none;
+  color: inherit;
+  transition: all .2s;
+}
+.sibling-card:hover {
+  background: linear-gradient(135deg, #e0e7ff, #ede9fe);
+  border-color: #a5b4fc;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(79,70,229,.15);
+}
+.sibling-icon { font-size: 1.8rem; flex-shrink: 0; }
+.sibling-body { flex: 1; min-width: 0; }
+.sibling-body h4 { margin: 0 0 2px; font-size: .95rem; color: #3730a3; }
+.sibling-body p { margin: 0; font-size: .8rem; color: #64748b; line-height: 1.4; }
+.sibling-arrow { color: #a5b4fc; font-weight: bold; flex-shrink: 0; }
+.ad-rectangle .sibling-card { flex-direction: column; text-align: center; }
+.ad-rectangle .sibling-arrow { margin-top: 6px; }

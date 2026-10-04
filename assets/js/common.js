@@ -15,7 +15,9 @@
       // Google Analytics ID（部署后替换为你的 G-XXXX）
       gaId: '',
       // Google AdSense Publisher ID（部署后替换为 ca-pub-XXXX）
-      adsenseId: ''
+      adsenseId: '',
+      // 当前站点 id（用于过滤掉指向自身的推荐卡片）
+      currentSite: ''
     }
   };
 
@@ -106,23 +108,48 @@
 
   // ============ 广告位 ============
   function adSlot(type) {
-    var label = '广告位';
-    var sizes = {
-      leaderboard: '728x90 / 横幅广告',
-      rectangle: '300x250 / 矩形广告',
-      sidebar: '300x600 / 侧栏广告'
-    };
-    return el('div', { class: 'ad-container' }, [
-      el('div', { class: 'ad-label', html: label }),
-      el('div', { class: 'ad-slot ad-' + type, html:
-        (App.config.adsenseId
-          ? '<ins class="adsbygoogle" style="display:block" ' +
-            'data-ad-client="' + App.config.adsenseId + '" ' +
-            'data-ad-slot="" data-ad-format="auto"></ins>' +
-            '<script>(adsbygoogle = window.adsbygoogle || []).push({});<\/script>'
-          : 'Google AdSense 广告位<br>(' + (sizes[type] || '') + ')<br><small>配置 ca-pub-XXXX 后启用</small>')
-      })
+    // 已配置 AdSense → 显示真实广告
+    if (App.config.adsenseId) {
+      var ins = el('ins', {
+        class: 'adsbygoogle',
+        style: 'display:block',
+        'data-ad-client': App.config.adsenseId,
+        'data-ad-slot': '',
+        'data-ad-format': 'auto'
+      });
+      var sc = document.createElement('script');
+      sc.textContent = '(adsbygoogle = window.adsbygoogle || []).push({});';
+      return el('div', { class: 'ad-container' }, [
+        el('div', { class: 'ad-slot ad-' + type }, [ins, sc])
+      ]);
+    }
+    // 未配置 AdSense → 用兄弟站点推荐导流（替代空广告位）
+    var base = getBasePath();
+    var others = SIBLING_SITES.filter(function (s) { return s.id !== App.config.currentSite; });
+    // 随机打乱，每次刷新展示不同站点
+    others.sort(function () { return Math.random() - 0.5; });
+    var count = type === 'leaderboard' ? 3 : (type === 'sidebar' ? 2 : 1);
+    var picks = others.slice(0, count);
+    var cards = picks.map(function (s) {
+      return '<a href="' + base + s.href + '" class="sibling-card" data-site="' + s.id + '">' +
+               '<span class="sibling-icon">' + s.icon + '</span>' +
+               '<div class="sibling-body">' +
+                 '<h4>' + s.title + '</h4>' +
+                 '<p>' + s.desc + '</p>' +
+               '</div>' +
+               '<span class="sibling-arrow">→</span>' +
+             '</a>';
+    }).join('');
+    var wrap = el('div', { class: 'ad-container' }, [
+      el('div', { class: 'ad-slot ad-' + type + ' sibling-slot', html: cards })
     ]);
+    wrap.addEventListener('click', function (e) {
+      var card = e.target.closest('.sibling-card');
+      if (card && window.MTA && MTA.track) {
+        MTA.track('sibling_click', { target: card.getAttribute('data-site') });
+      }
+    });
+    return wrap;
   }
 
   function injectAdSense() {
@@ -149,6 +176,30 @@
     gtag('config', App.config.gaId, { send_page_view: true });
   }
 
+  // ============ 跨站推荐（兄弟站点导流） ============
+  var SIBLING_SITES = [
+    { id: 'students',  icon: '🎯', title: '趣味测试站', desc: '动物性格、星座配对、生日密码，学生最爱', href: 'students/index.html' },
+    { id: 'tools',     icon: '🔧', title: '在线工具箱', desc: '单位换算、BMI、密码生成，实用小工具',    href: 'tools/index.html' },
+    { id: 'blog',      icon: '📝', title: '生活百科',   desc: '健康科普、省电技巧、密码安全文章',       href: 'blog/index.html' },
+    { id: 'resources', icon: '📚', title: '资源导航',   desc: '设计、开发、学习、效率精选资源',         href: 'resources/index.html' },
+    { id: 'reviews',   icon: '⭐', title: '产品测评',   desc: '主流工具深度对比测评，帮你选对',         href: 'reviews/index.html' }
+  ];
+
+  // 计算当前页面到站点根目录的相对路径前缀（兼容 GitHub Pages 子路径）
+  function getBasePath() {
+    var parts = location.pathname.split('/').filter(Boolean);
+    var siteDirs = ['students', 'tools', 'blog', 'resources', 'reviews', 'dashboard'];
+    var siteIdx = -1;
+    for (var i = 0; i < parts.length; i++) {
+      if (siteDirs.indexOf(parts[i]) !== -1) { siteIdx = i; break; }
+    }
+    if (siteIdx === -1) return '';
+    var subDepth = parts.length - siteIdx - 1;
+    var base = '';
+    for (var j = 0; j < subDepth; j++) base += '../';
+    return base;
+  }
+
   // ============ SEO meta（可选） ============
   function seo(opts) {
     if (opts.title) document.title = opts.title;
@@ -169,6 +220,7 @@
     opts = opts || {};
     if (opts.gaId) App.config.gaId = opts.gaId;
     if (opts.adsenseId) App.config.adsenseId = opts.adsenseId;
+    if (opts.site) App.config.currentSite = opts.site;
 
     if (opts.nav) mountNav(opts.nav, opts.brand, opts.brandIcon);
     injectAdSense();
