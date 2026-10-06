@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>小游戏站 - 刀光剑影、休闲益智小游戏</title>
+  <meta name="description" content="免费在线小游戏：刀光剑影躲避飞刀，扁平3D质感，即开即玩，无需下载。">
+  <meta name="keywords" content="小游戏,在线游戏,躲避飞刀,休闲游戏,免费游戏">
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <style>
+    body { background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%); color: #fff; }
+    .game-hero { text-align: center; padding: 50px 20px 30px; }
+    .game-hero h1 { font-size: 2.6rem; margin-bottom: 12px; background: linear-gradient(90deg,#f9d423,#ff4e50); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .game-hero p { opacity: .85; font-size: 1.1rem; }
+    .game-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin: 30px 0; }
+    .game-card { display: block; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1); border-radius: 16px; overflow: hidden; text-decoration: none; color: #fff; transition: all .25s; backdrop-filter: blur(10px); }
+    .game-card:hover { transform: translateY(-6px); border-color: rgba(249,212,35,.4); box-shadow: 0 20px 40px rgba(0,0,0,.3); }
+    .game-thumb { height: 160px; display: flex; align-items: center; justify-content: center; font-size: 4rem; background: linear-gradient(135deg, #2d1b69, #11998e); position: relative; }
+    .game-thumb::after { content: ''; position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px); background-size: 30px 30px; }
+    .game-info { padding: 20px; }
+    .game-info h3 { margin: 0 0 8px; font-size: 1.2rem; color: #f9d423; }
+    .game-info p { margin: 0; opacity: .75; font-size: .9rem; line-height: 1.6; }
+    .game-meta { margin-top: 12px; display: flex; gap: 10px; font-size: .8rem; opacity: .6; }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; background: rgba(249,212,35,.15); color: #f9d423; }
+    .vip-badge { background: linear-gradient(135deg,#f9d423,#ff4e50); color: #2d1b69; font-weight: 700; }
+  </style>
+</head>
+<body>
+
+<main class="main">
+  <div class="container">
+    <section class="game-hero">
+      <h1>🎮 小游戏站</h1>
+      <p>扁平3D质感，即开即玩，无需下载</p>
+    </section>
+
+    <div id="ad-top" style="margin-bottom:24px"></div>
+
+    <div class="game-grid">
+      <a href="dodge.html" class="game-card" onclick="MTA.track('click_game',{id:'dodge'})">
+        <div class="game-thumb">🗡️</div>
+        <div class="game-info">
+          <h3>刀光剑影</h3>
+          <p>四面八方飞刀袭来，WASD 控制角色躲避，活得越久分越高。难度随时间递增！</p>
+          <div class="game-meta"><span class="badge">🔥 热门</span><span>休闲 · 躲避</span></div>
+        </div>
+      </a>
+
+      <div class="game-card" style="opacity:.6">
+        <div class="game-thumb" style="background:linear-gradient(135deg,#434343,#000)">🔒</div>
+        <div class="game-info">
+          <h3>更多游戏</h3>
+          <p>敬请期待，每周上新</p>
+          <div class="game-meta"><span>Coming Soon</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="ad-bottom"></div>
+  </div>
+</main>
+
+<script src="../assets/js/tracker.js?v=2" data-site="games"></script>
+<script src="../assets/js/common.js?v=2"></script>
+<script src="../assets/js/payment.js?v=1"></script>
+<script>
+App.mount({
+  site: 'games',
+  brand: '小游戏站',
+  brandIcon: '🎮',
+  nav: [
+    { label: '首页', href: 'index.html' },
+    { label: '刀光剑影', href: 'dodge.html' },
+    { label: '💰 充值', href: 'javascript:PaySDK.showRecharge()' }
+  ],
+  footer: { tools: [{ label: '刀光剑影', href: 'dodge.html' }], articles: [] }
+});
+document.getElementById('ad-top').appendChild(App.ad('leaderboard'));
+document.getElementById('ad-bottom').appendChild(App.ad('rectangle'));
+PaySDK.showUserMenu();
+</script>
+</body>
+</html>

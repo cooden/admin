@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>刀光剑影 - 躲避飞刀小游戏</title>
+  <meta name="description" content="扁平3D质感的躲避飞刀小游戏，WASD控制移动，躲避四面八方飞来的刀，活得越久分越高。">
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #0f0c29; background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%); min-height: 100vh; font-family: -apple-system, "PingFang SC", sans-serif; color: #fff; overflow-x: hidden; }
+
+    .game-wrap { max-width: 900px; margin: 0 auto; padding: 20px; }
+    .game-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; }
+    .game-title { font-size: 1.6rem; font-weight: 800; background: linear-gradient(90deg,#f9d423,#ff4e50); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .score-box { display: flex; gap: 16px; }
+    .score-item { background: rgba(255,255,255,.1); backdrop-filter: blur(10px); padding: 8px 18px; border-radius: 12px; border: 1px solid rgba(255,255,255,.15); text-align: center; }
+    .score-item .label { font-size: .7rem; opacity: .7; }
+    .score-item .val { font-size: 1.4rem; font-weight: 700; color: #f9d423; }
+
+    /* ===== 3D 竞技场 ===== */
+    .arena-3d { perspective: 900px; perspective-origin: 50% 30%; margin: 20px 0; }
+    .arena {
+      position: relative; width: 100%; aspect-ratio: 1/1; max-width: 600px; margin: 0 auto;
+      transform: rotateX(52deg) rotateZ(0deg);
+      transform-style: preserve-3d;
+      background: linear-gradient(135deg, #2d1b69 0%, #11998e 100%);
+      border-radius: 16px;
+      box-shadow: 0 40px 80px rgba(0,0,0,.5), inset 0 0 60px rgba(255,255,255,.1);
+      overflow: hidden;
+    }
+    /* 网格地板 */
+    .arena::before {
+      content: ''; position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.08) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+    /* 中心安全区光环 */
+    .arena::after {
+      content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+      width: 120px; height: 120px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(249,212,35,.25), transparent 70%);
+      pointer-events: none;
+    }
+
+    /* 玩家 */
+    .player {
+      position: absolute; top: 50%; left: 50%;
+      width: 44px; height: 44px; transform: translate(-50%,-50%) translateZ(30px);
+      transform-style: preserve-3d;
+      transition: transform .08s ease-out;
+      z-index: 10;
+    }
+    .player-body {
+      width: 100%; height: 100%; border-radius: 50%;
+      background: linear-gradient(135deg, #f9d423, #ff4e50);
+      box-shadow: 0 8px 20px rgba(255,78,80,.5), inset 0 -4px 8px rgba(0,0,0,.2);
+      position: relative;
+    }
+    .player-body::before, .player-body::after {
+      content: ''; position: absolute; top: 12px; width: 6px; height: 6px; border-radius: 50%; background: #2d1b69;
+    }
+    .player-body::before { left: 11px; }
+    .player-body::after { right: 11px; }
+    .player-shadow {
+      position: absolute; bottom: -14px; left: 50%; transform: translateX(-50%);
+      width: 36px; height: 10px; border-radius: 50%;
+      background: rgba(0,0,0,.35); filter: blur(3px);
+    }
+
+    /* 飞刀 */
+    .knife {
+      position: absolute; width: 60px; height: 12px;
+      transform-style: preserve-3d;
+      will-change: transform;
+    }
+    .knife-blade {
+      position: absolute; right: 0; top: 0; width: 42px; height: 12px;
+      background: linear-gradient(90deg, #c0c0c0, #ffffff, #c0c0c0);
+      clip-path: polygon(0 0, 100% 50%, 0 100%);
+      box-shadow: 0 2px 4px rgba(0,0,0,.3);
+    }
+    .knife-handle {
+      position: absolute; left: 0; top: -2px; width: 20px; height: 16px;
+      background: linear-gradient(135deg, #8b4513, #d2691e);
+      border-radius: 3px;
+    }
+    .knife-shadow {
+      position: absolute; bottom: -10px; left: 10px;
+      width: 40px; height: 6px; border-radius: 50%;
+      background: rgba(0,0,0,.3); filter: blur(2px);
+    }
+
+    /* 开始/结束遮罩 */
+    .overlay {
+      position: absolute; inset: 0; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      background: rgba(15,12,41,.85); backdrop-filter: blur(8px);
+      border-radius: 16px; z-index: 100; text-align: center; padding: 20px;
+    }
+    .overlay h2 { font-size: 2rem; margin: 0 0 8px; background: linear-gradient(90deg,#f9d423,#ff4e50); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .overlay p { opacity: .85; margin: 4px 0; }
+    .btn {
+      margin-top: 20px; padding: 14px 40px; font-size: 1.1rem; font-weight: 700;
+      background: linear-gradient(135deg, #f9d423, #ff4e50); color: #2d1b69;
+      border: none; border-radius: 30px; cursor: pointer;
+      box-shadow: 0 8px 20px rgba(255,78,80,.4);
+      transition: transform .15s;
+    }
+    .btn:hover { transform: scale(1.05); }
+    .btn:active { transform: scale(.98); }
+
+    .controls-info { text-align: center; margin-top: 16px; opacity: .7; font-size: .9rem; }
+    .controls-info kbd { background: rgba(255,255,255,.15); padding: 4px 10px; border-radius: 6px; margin: 0 2px; }
+
+    .hidden { display: none !important; }
+
+    /* 移动端虚拟摇杆 */
+    .mobile-controls { display: none; margin-top: 16px; }
+    @media (max-width: 768px) {
+      .mobile-controls { display: grid; grid-template-columns: repeat(3, 60px); gap: 8px; justify-content: center; }
+      .mobile-controls button { width: 60px; height: 60px; border-radius: 12px; border: none; background: rgba(255,255,255,.15); color: #fff; font-size: 1.4rem; }
+      .mobile-controls .empty { visibility: hidden; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="game-wrap">
+  <div class="game-header">
+    <div class="game-title">🗡️ 刀光剑影</div>
+    <div class="score-box">
+      <div class="score-item"><div class="label">分数</div><div class="val" id="score">0</div></div>
+      <div class="score-item"><div class="label">最高分</div><div class="val" id="best">0</div></div>
+    </div>
+  </div>
+
+  <div class="arena-3d">
+    <div class="arena" id="arena">
+      <div class="player" id="player">
+        <div class="player-body"></div>
+        <div class="player-shadow"></div>
+      </div>
+      <div class="overlay" id="overlay">
+        <h2>🗡️ 刀光剑影</h2>
+        <p>躲避四面八方飞来的飞刀</p>
+        <p>活得越久，分数越高</p>
+        <button class="btn" id="startBtn">开始游戏</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="mobile-controls">
+    <div class="empty"></div>
+    <button data-dir="up">↑</button>
+    <div class="empty"></div>
+    <button data-dir="left">←</button>
+    <button data-dir="down">↓</button>
+    <button data-dir="right">→</button>
+  </div>
+
+  <p class="controls-info">
+    <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> 或 <kbd>↑</kbd><kbd>←</kbd><kbd>↓</kbd><kbd>→</kbd> 控制移动
+  </p>
+
+  <div id="ad-bottom"></div>
+</div>
+
+<script src="../assets/js/tracker.js?v=2" data-site="games"></script>
+<script src="../assets/js/common.js?v=2"></script>
+<script src="../assets/js/payment.js?v=1"></script>
+<script>
+App.mount({
+  site: 'games',
+  brand: '小游戏站',
+  brandIcon: '🎮',
+  nav: [
+    { label: '首页', href: 'index.html' },
+    { label: '刀光剑影', href: 'dodge.html' },
+    { label: '💰 充值', href: 'javascript:PaySDK.showRecharge()' }
+  ],
+  footer: { tools: [{ label: '刀光剑影', href: 'dodge.html' }], articles: [] }
+});
+document.getElementById('ad-bottom').appendChild(App.ad('leaderboard'));
+PaySDK.showUserMenu();
+window._revive = function () {
+  if (!PaySDK.user) { PaySDK.showLogin(); return false; }
+  if (PaySDK.user.coins < 50) { alert('金币不足（需要50），请先充值'); PaySDK.showRecharge(); return false; }
+  PaySDK.addCoins(-50);
+  return true;
+};
+
+// ===== 游戏逻辑 =====
+(function () {
+  var arena = document.getElementById('arena');
+  var player = document.getElementById('player');
+  var overlay = document.getElementById('overlay');
+  var startBtn = document.getElementById('startBtn');
+  var scoreEl = document.getElementById('score');
+  var bestEl = document.getElementById('best');
+
+  var ARENA = 600; // 逻辑尺寸
+  var running = false;
+  var score = 0;
+  var best = parseInt(localStorage.getItem('dodge_best') || '0', 10);
+  bestEl.textContent = best;
+
+  var px = 0, py = 0; // 玩家逻辑坐标 (-300 ~ 300)
+  var speed = 5;
+  var knives = [];
+  var keys = {};
+  var spawnTimer = 0;
+  var spawnInterval = 60; // 帧数
+  var frame = 0;
+  var difficulty = 1;
+
+  function toPx(v) { return (v / ARENA) * 100; } // 转百分比
+
+  function updatePlayer() {
+    var moveX = 0, moveY = 0;
+    if (keys['w'] || keys['arrowup']) moveY -= 1;
+    if (keys['s'] || keys['arrowdown']) moveY += 1;
+    if (keys['a'] || keys['arrowleft']) moveX -= 1;
+    if (keys['d'] || keys['arrowright']) moveX += 1;
+    if (moveX && moveY) { moveX *= 0.707; moveY *= 0.707; }
+    px += moveX * speed;
+    py += moveY * speed;
+    var bound = ARENA / 2 - 22;
+    px = Math.max(-bound, Math.min(bound, px));
+    py = Math.max(-bound, Math.min(bound, py));
+    player.style.left = (50 + toPx(px)) + '%';
+    player.style.top = (50 + toPx(py)) + '%';
+  }
+
+  function spawnKnife() {
+    var side = Math.floor(Math.random() * 4); // 0上 1右 2下 3左
+    var k = document.createElement('div');
+    k.className = 'knife';
+    k.innerHTML = '<div class="knife-handle"></div><div class="knife-blade"></div><div class="knife-shadow"></div>';
+    var startX, startY, dx, dy, rot;
+    var off = 40;
+    if (side === 0) { startX = (Math.random() - 0.5) * ARENA; startY = -ARENA / 2 - off; dx = 0; dy = 1; rot = 90; }
+    else if (side === 1) { startX = ARENA / 2 + off; startY = (Math.random() - 0.5) * ARENA; dx = -1; dy = 0; rot = 180; }
+    else if (side === 2) { startX = (Math.random() - 0.5) * ARENA; startY = ARENA / 2 + off; dx = 0; dy = -1; rot = 270; }
+    else { startX = -ARENA / 2 - off; startY = (Math.random() - 0.5) * ARENA; dx = 1; dy = 0; rot = 0; }
+    k.style.left = (50 + toPx(startX)) + '%';
+    k.style.top = (50 + toPx(startY)) + '%';
+    k.style.transform = 'translateZ(20px) rotate(' + rot + 'deg)';
+    arena.appendChild(k);
+    knives.push({ el: k, x: startX, y: startY, dx: dx, dy: dy, sp: 3 + difficulty * 0.5 });
+  }
+
+  function updateKnives() {
+    for (var i = knives.length - 1; i >= 0; i--) {
+      var k = knives[i];
+      k.x += k.dx * k.sp;
+      k.y += k.dy * k.sp;
+      k.el.style.left = (50 + toPx(k.x)) + '%';
+      k.el.style.top = (50 + toPx(k.y)) + '%';
+      // 碰撞检测
+      var dist = Math.hypot(k.x - px, k.y - py);
+      if (dist < 26) { gameOver(); return; }
+      // 出界移除
+      if (Math.abs(k.x) > ARENA / 2 + 80 || Math.abs(k.y) > ARENA / 2 + 80) {
+        k.el.remove();
+        knives.splice(i, 1);
+        score += 5;
+      }
+    }
+  }
+
+  function loop() {
+    if (!running) return;
+    frame++;
+    updatePlayer();
+    updateKnives();
+    if (frame % 6 === 0) { score += 1; }
+    scoreEl.textContent = score;
+    // 难度递增
+    difficulty = 1 + Math.floor(frame / 300);
+    spawnInterval = Math.max(20, 60 - difficulty * 4);
+    spawnTimer++;
+    if (spawnTimer >= spawnInterval) {
+      spawnTimer = 0;
+      spawnKnife();
+      if (difficulty > 3 && Math.random() < 0.3) spawnKnife();
+    }
+    requestAnimationFrame(loop);
+  }
+
+  function startGame() {
+    knives.forEach(function (k) { k.el.remove(); });
+    knives = [];
+    px = 0; py = 0; score = 0; frame = 0; difficulty = 1; spawnTimer = 0;
+    scoreEl.textContent = 0;
+    overlay.classList.add('hidden');
+    running = true;
+    MTA.track('game_start', { game: 'dodge' });
+    requestAnimationFrame(loop);
+  }
+
+  function gameOver() {
+    running = false;
+    if (score > best) { best = score; localStorage.setItem('dodge_best', best); bestEl.textContent = best; }
+    MTA.track('game_over', { game: 'dodge', score: score });
+    overlay.innerHTML = '<h2>💀 游戏结束</h2><p>本局得分：<b style="color:#f9d423">' + score + '</b></p><p>最高分：' + best + '</p>' +
+      '<button class="btn" id="restartBtn" style="margin-right:10px">再来一局</button>' +
+      '<button class="btn" id="reviveBtn" style="background:linear-gradient(135deg,#10b981,#059669)">💖 花50金币复活</button>';
+    overlay.classList.remove('hidden');
+    document.getElementById('restartBtn').onclick = startGame;
+    document.getElementById('reviveBtn').onclick = function () {
+      if (window._revive && window._revive()) {
+        overlay.classList.add('hidden');
+        running = true;
+        requestAnimationFrame(loop);
+      }
+    };
+  }
+
+  startBtn.onclick = startGame;
+
+  window.addEventListener('keydown', function (e) {
+    keys[e.key.toLowerCase()] = true;
+    if (['arrowup','arrowdown','arrowleft','arrowright',' '].indexOf(e.key.toLowerCase()) >= 0) e.preventDefault();
+  });
+  window.addEventListener('keyup', function (e) { keys[e.key.toLowerCase()] = false; });
+
+  // 移动端按钮
+  document.querySelectorAll('.mobile-controls button[data-dir]').forEach(function (btn) {
+    var dir = btn.getAttribute('data-dir');
+    var map = { up: 'arrowup', down: 'arrowdown', left: 'arrowleft', right: 'arrowright' };
+    btn.addEventListener('touchstart', function (e) { e.preventDefault(); keys[map[dir]] = true; });
+    btn.addEventListener('touchend', function (e) { e.preventDefault(); keys[map[dir]] = false; });
+    btn.addEventListener('mousedown', function () { keys[map[dir]] = true; });
+    btn.addEventListener('mouseup', function () { keys[map[dir]] = false; });
+    btn.addEventListener('mouseleave', function () { keys[map[dir]] = false; });
+  });
+})();
+</script>
+</body>
+</html>
