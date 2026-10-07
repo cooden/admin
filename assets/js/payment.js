@@ -1,119 +1,143 @@
 /**
- * 支付与用户模块 (PaySDK)
+ * 支付与用户模块 (PaySDK) - 已对接真实后端
  *
- * 当前模式：模拟支付（演示完整流程，待接入真实支付）
- * 真实接入说明：
- *   1. 微信支付：需营业执照 + 微信商户号 + APIv3 密钥，后端调用统一下单
- *   2. 支付宝电脑网站支付：需企业支付宝 + 应用公钥/私钥，后端调用 alipay.trade.page.pay
- *   3. 个人可用方案：虎皮椒(xunhupay) / Payjs / 爱发电（第三方代收，有抽成）
+ * 后端：server/server.js（虎皮椒 xunhupay 对接）
+ * 流程：前端 → 后端创建订单 → 虎皮椒返回二维码 → 用户扫码支付
+ *       → 虎皮椒异步回调后端 → 后端加金币 → 前端轮询检测到 paid → 自动刷新余额
  *
- * 接入真实支付只需替换 PaySDK.config.apiBase 和 createOrder 内部逻辑。
+ * 配置：PaySDK.config.apiBase 指向服务器地址
  */
 (function (window) {
   'use strict';
 
   var PaySDK = {
     config: {
-      // 后端支付接口地址（留空则使用模拟模式）
-      apiBase: '',
-      // 商户信息（真实接入时填写）
-      merchant: {
-        name: '',
-        alipayAccount: ''
-      }
+      // 后端支付接口地址（80 端口，无需写端口号）
+      apiBase: 'http://101.96.236.163',
+      // 轮询间隔（毫秒）
+      pollInterval: 2000
     },
     user: null,
+    token: null,
     onBalanceChange: null
   };
 
-  // ============ 用户系统（localStorage 模拟） ============
+  // ============ 用户系统（对接后端 + token 持久化） ============
   function loadUser() {
     try {
-      var u = localStorage.getItem('pay_user');
-      PaySDK.user = u ? JSON.parse(u) : null;
-    } catch (e) { PaySDK.user = null; }
+      var stored = localStorage.getItem('pay_user');
+      if (stored) {
+        var obj = JSON.parse(stored);
+        PaySDK.user = obj.user;
+        PaySDK.token = obj.token;
+      }
+    } catch (e) { PaySDK.user = null; PaySDK.token = null; }
     return PaySDK.user;
   }
-  function saveUser(u) {
-    PaySDK.user = u;
-    localStorage.setItem('pay_user', JSON.stringify(u));
-    if (PaySDK.onBalanceChange) PaySDK.onBalanceChange(u);
-    // 自动刷新右上角用户栏
+  function saveUser(user, token) {
+    PaySDK.user = user;
+    PaySDK.token = token;
+    localStorage.setItem('pay_user', JSON.stringify({ user: user, token: token }));
+    if (PaySDK.onBalanceChange) PaySDK.onBalanceChange(user);
     if (document.getElementById('pay-user-bar')) PaySDK.showUserMenu();
   }
+
+  // 带鉴权头的 fetch 封装
+  function apiFetch(path, opts) {
+    opts = opts || {};
+    opts.headers = Object.assign({ 'Content-Type': 'application/json' }, opts.headers || {});
+    if (PaySDK.token) opts.headers['Authorization'] = 'Bearer ' + PaySDK.token;
+    return fetch(PaySDK.config.apiBase + path, opts).then(function (r) {
+      return r.json().then(function (data) {
+        if (!r.ok) throw new Error(data.msg || ('HTTP ' + r.status));
+        return data;
+      });
+    });
+  }
+
+  PaySDK.login = function (username, password, callback) {
+    if (!username || !password) { callback({ ok: false, msg: '请填写用户名和密码' }); return; }
+    apiFetch('/api/user/login', {
+      method: 'POST',
+      body: JSON.stringify({ username: username, password: password })
+    }).then(function (res) {
+      if (res.ok) saveUser(res.user, res.token);
+      callback(res);
+    }).catch(function (e) { callback({ ok: false, msg: e.message }); });
+  };
+
+  // 从后端刷新余额
+  PaySDK.refreshBalance = function (callback) {
+    if (!PaySDK.token) { if (callback) callback(); return; }
+    apiFetch('/api/user/info').then(function (res) {
+      if (res.ok) {
+        PaySDK.user = res.user;
+        localStorage.setItem('pay_user', JSON.stringify({ user: res.user, token: PaySDK.token }));
+        if (PaySDK.onBalanceChange) PaySDK.onBalanceChange(res.user);
+        if (document.getElementById('pay-user-bar')) PaySDK.showUserMenu();
+      }
+      if (callback) callback(res);
+    }).catch(function () { if (callback) callback(); });
+  };
+
+  PaySDK.logout = function () {
+    localStorage.removeItem('pay_user');
+    PaySDK.user = null;
+    PaySDK.token = null;
+    if (PaySDK.onBalanceChange) PaySDK.onBalanceChange(null);
+  };
+
+  // 兼容旧调用（实际加金币由后端回调做）
+  PaySDK.addCoins = function (amount) {
+    if (!PaySDK.user) return false;
+    PaySDK.user.coins = (PaySDK.user.coins || 0) + amount;
+    localStorage.setItem('pay_user', JSON.stringify({ user: PaySDK.user, token: PaySDK.token }));
+    if (PaySDK.onBalanceChange) PaySDK.onBalanceChange(PaySDK.user);
+    if (document.getElementById('pay-user-bar')) PaySDK.showUserMenu();
+    return true;
+  };
+
   function guestId() {
     var id = localStorage.getItem('pay_guest_id');
     if (!id) { id = 'g_' + Math.random().toString(36).slice(2, 10); localStorage.setItem('pay_guest_id', id); }
     return id;
   }
 
-  PaySDK.login = function (username, password) {
-    // 模拟登录：密码不校验，仅记录用户名
-    if (!username) return { ok: false, msg: '请输入用户名' };
-    var u = {
-      username: username,
-      coins: parseInt(localStorage.getItem('pay_coins_' + username) || '0', 10),
-      vip: false,
-      createdAt: Date.now()
-    };
-    saveUser(u);
-    return { ok: true, user: u };
-  };
-
-  PaySDK.logout = function () {
-    localStorage.removeItem('pay_user');
-    PaySDK.user = null;
-    if (PaySDK.onBalanceChange) PaySDK.onBalanceChange(null);
-  };
-
-  PaySDK.addCoins = function (amount) {
-    if (!PaySDK.user) return false;
-    PaySDK.user.coins += amount;
-    localStorage.setItem('pay_coins_' + PaySDK.user.username, PaySDK.user.coins);
-    saveUser(PaySDK.user);
-    return true;
-  };
-
-  // ============ 创建订单 ============
+  // ============ 创建订单（真实对接后端） ============
   PaySDK.createOrder = function (opts, callback) {
     // opts: { amount, payType: 'wechat'|'alipay', product }
-    var order = {
-      orderId: 'ORD' + Date.now() + Math.floor(Math.random() * 1000),
-      amount: opts.amount,
-      payType: opts.payType,
-      product: opts.product || '游戏金币',
-      status: 'pending',
-      createdAt: Date.now()
-    };
-
-    // 真实接入：调用后端创建订单，获取支付二维码/链接
-    if (PaySDK.config.apiBase) {
-      // TODO: 真实接口调用
-      // fetch(PaySDK.config.apiBase + '/pay/create', { method:'POST', body: JSON.stringify(order) })
-      //   .then(r => r.json()).then(data => callback(data));
-      callback({ ok: false, msg: '支付接口未配置' });
-      return;
-    }
-
-    // 模拟模式：直接返回二维码（用占位图）
-    var qrUrl = opts.payType === 'wechat'
-      ? 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=weixin://wxpay/bizpayurl?pr=' + order.orderId
-      : 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=alipays://platformapi/startapp?saId=10000007&clientVersion=3.7.0.0718&qrcode=' + encodeURIComponent('https://qr.alipay.com/' + order.orderId);
-
-    callback({
-      ok: true,
-      order: order,
-      qrUrl: qrUrl,
-      tip: opts.payType === 'wechat' ? '请使用微信扫一扫支付' : '请使用支付宝扫一扫支付'
-    });
+    apiFetch('/api/pay/create', {
+      method: 'POST',
+      body: JSON.stringify({
+        amount: opts.amount,
+        payType: opts.payType,
+        product: opts.product || '游戏金币'
+      })
+    }).then(function (res) {
+      callback(res);
+    }).catch(function (e) { callback({ ok: false, msg: e.message }); });
   };
 
-  // ============ 模拟支付成功（演示用，真实由后端回调触发） ============
-  PaySDK.mockPaySuccess = function (order) {
-    // 金币比例：1 元 = 10 金币
-    var coins = Math.floor(order.amount * 10);
-    PaySDK.addCoins(coins);
-    return coins;
+  // 轮询订单状态，直到 paid 或超时
+  PaySDK.pollOrder = function (orderId, onPaid, onTimeout) {
+    var start = Date.now();
+    var timeout = 5 * 60 * 1000; // 5 分钟超时
+    function tick() {
+      if (Date.now() - start > timeout) { if (onTimeout) onTimeout(); return; }
+      fetch(PaySDK.config.apiBase + '/api/pay/query?orderId=' + orderId)
+        .then(function (r) { return r.json(); })
+        .then(function (res) {
+          if (res.ok && res.status === 'paid') {
+            // 已支付，刷新余额
+            PaySDK.refreshBalance(function () {
+              if (onPaid) onPaid(res);
+            });
+          } else {
+            setTimeout(tick, PaySDK.config.pollInterval);
+          }
+        }).catch(function () { setTimeout(tick, PaySDK.config.pollInterval); });
+    }
+    tick();
   };
 
   // ============ 充值套餐 ============
@@ -144,17 +168,20 @@
   // ============ UI：登录弹窗 ============
   PaySDK.showLogin = function () {
     var m = modal('登录 / 注册',
-      '<div class="pay-field"><label>用户名</label><input id="pay-user" placeholder="输入用户名（无需密码）"></div>' +
-      '<div class="pay-field"><label>密码（模拟，可任意填）</label><input id="pay-pass" type="password" placeholder="随便填"></div>' +
-      '<button class="pay-btn-primary" id="pay-do-login">登录</button>' +
-      '<p class="pay-tip">演示模式：输入用户名即可登录，数据保存在本地浏览器</p>'
+      '<div class="pay-field"><label>用户名</label><input id="pay-user" placeholder="2-20 位字母数字"></div>' +
+      '<div class="pay-field"><label>密码</label><input id="pay-pass" type="password" placeholder="设置或输入密码"></div>' +
+      '<button class="pay-btn-primary" id="pay-do-login">登录 / 注册</button>' +
+      '<p class="pay-tip">首次输入即注册，数据保存在服务器</p>'
     );
     m.querySelector('#pay-do-login').onclick = function () {
       var u = m.querySelector('#pay-user').value.trim();
       var p = m.querySelector('#pay-pass').value;
-      var r = PaySDK.login(u, p);
-      if (r.ok) { m.remove(); PaySDK.showUserMenu(); }
-      else alert(r.msg);
+      var btn = m.querySelector('#pay-do-login');
+      btn.disabled = true; btn.textContent = '登录中...';
+      PaySDK.login(u, p, function (r) {
+        if (r.ok) { m.remove(); PaySDK.showUserMenu(); }
+        else { btn.disabled = false; btn.textContent = '登录 / 注册'; alert(r.msg); }
+      });
     };
   };
 
@@ -211,20 +238,33 @@
       if (!selected) { alert('请选择套餐'); return; }
       var pkg = PaySDK.packages.filter(function (p) { return p.id === selected; })[0];
       var payType = m.querySelector('input[name=paytype]:checked').value;
+      var btn = m.querySelector('#pay-confirm');
+      btn.disabled = true; btn.textContent = '生成订单中...';
       PaySDK.createOrder({ amount: pkg.price, payType: payType, product: pkg.label }, function (res) {
+        btn.disabled = false; btn.textContent = '确认支付';
         if (!res.ok) { alert(res.msg); return; }
         var area = m.querySelector('#pay-qr-area');
+        var isMock = res.mock ? '<p class="pay-tip">⚠️ 当前为模拟模式（后端未配置虎皮椒密钥）</p>' : '';
         area.innerHTML = '<div class="pay-qr-box">' +
           '<img src="' + res.qrUrl + '" alt="支付二维码">' +
           '<p>' + res.tip + '</p>' +
-          '<p class="pay-amount">应付：<b>¥' + res.order.amount + '</b></p>' +
-          '<button class="pay-btn-ghost" id="pay-mock-success">模拟支付成功（演示）</button>' +
+          '<p class="pay-amount">应付：<b>¥' + pkg.price + '</b></p>' +
+          isMock +
+          '<p class="pay-tip" id="pay-waiting">⏳ 等待支付结果...<span id="pay-dots"></span></p>' +
           '</div>';
-        area.querySelector('#pay-mock-success').onclick = function () {
-          var coins = PaySDK.mockPaySuccess(res.order);
-          area.innerHTML = '<div class="pay-success">✅ 支付成功！获得 ' + coins + ' 金币</div>';
-          setTimeout(function () { m.remove(); }, 1500);
-        };
+        // 启动轮询
+        PaySDK.pollOrder(res.orderId, function (paidRes) {
+          area.innerHTML = '<div class="pay-success">✅ 支付成功！获得 ' + paidRes.coins + ' 金币</div>';
+          setTimeout(function () { m.remove(); }, 1800);
+        }, function () {
+          area.innerHTML = '<div class="pay-fail">⌛ 等待超时，请重新发起</div>';
+        });
+        // 动画点
+        var dots = area.querySelector('#pay-dots');
+        if (dots) {
+          var n = 0;
+          setInterval(function () { n = (n + 1) % 4; dots.textContent = '.'.repeat(n); }, 500);
+        }
       });
     };
   };

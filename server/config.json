@@ -1,0 +1,10 @@
+{
+  "port": 3000,
+  "xunhu": {
+    "appid": "",
+    "secret": "",
+    "apiHost": "https://api.xunhupay.com",
+    "notifyUrl": "http://101.96.236.163:3000/api/pay/notify",
+    "returnUrl": "http://101.96.236.163/"
+  }
+}
