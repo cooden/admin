@@ -127,21 +127,17 @@
     @media (max-width: 640px) {
       .sql-sidebar { display: none; }
     }
-    /* 广告：全宽横幅，卡片上下排列 */
-    .sql-ad-bar {
-      padding: 12px 20px;
-      background: var(--card-bg);
-      border-bottom: 1px solid var(--border);
-    }
-    .sql-ad-bar .sibling-slot { flex-direction: column; gap: 10px; }
-    .sql-ad-bar .sibling-card {
+    /* 广告：右侧面板内，卡片上下排列 */
+    #ad-side { margin-top: 16px; }
+    #ad-side .sibling-slot { flex-direction: column; gap: 10px; }
+    #ad-side .sibling-card {
       flex-direction: row;
       text-align: left;
-      padding: 14px 18px;
+      padding: 12px 14px;
     }
-    .sql-ad-bar .sibling-icon { font-size: 1.8rem; }
-    .sql-ad-bar .sibling-body h4 { font-size: 1rem; }
-    .sql-ad-bar .sibling-body p { font-size: .85rem; }
+    #ad-side .sibling-icon { font-size: 1.6rem; }
+    #ad-side .sibling-body h4 { font-size: .9rem; }
+    #ad-side .sibling-body p { font-size: .78rem; }
   </style>
 </head>
 <body>
@@ -160,9 +156,6 @@
     <button id="btn-export" class="btn-secondary">💾 导出数据库</button>
     <button id="btn-reset" class="btn-secondary" style="color:var(--danger)">♻️ 重置全部</button>
   </div>
-
-  <!-- 广告位（全宽，卡片上下排列） -->
-  <div class="sql-ad-bar" id="ad-top"></div>
 
   <!-- 主体三栏 -->
   <div class="sql-main">
@@ -204,6 +197,7 @@ SELECT * FROM users;</textarea>
     <aside class="sql-lessons" id="lessons">
       <h4 style="font-size:14px;margin-bottom:12px;color:var(--text)">📚 SQL 教程</h4>
       <div id="lesson-list"></div>
+      <div id="ad-side"></div>
     </aside>
   </div>
 </div>
@@ -226,7 +220,7 @@ App.mount({
     { label: 'SQL 学习', href: 'sql.html' }
   ]
 });
-document.getElementById('ad-top').appendChild(App.ad('leaderboard'));
+document.getElementById('ad-side').appendChild(App.ad('sidebar'));
 if (window.MTA) MTA.track('view_tool', { tool: 'sql' });
 
 /* ===================== SQL 引擎 ===================== */
