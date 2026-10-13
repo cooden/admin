@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SQL 在线学习 - 浏览器内执行 SQL | 建库建表增删改查</title>
+  <meta name="description" content="免费在线 SQL 学习工具，浏览器内直接执行 SQL，支持创建数据库、建表、增删改查，配套从入门到进阶教程，打开即用无需安装。">
+  <meta name="keywords" content="SQL在线学习,在线SQL执行器,SQL教程,建库建表,SQLite,sql.js">
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <style>
+    /* ===== SQL 工具专属样式 ===== */
+    .sql-app { display: flex; flex-direction: column; height: calc(100vh - 64px); }
+    .sql-toolbar {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 20px; background: var(--card-bg);
+      border-bottom: 1px solid var(--border); flex-wrap: wrap;
+    }
+    .sql-toolbar select, .sql-toolbar button {
+      padding: 6px 14px; border: 1px solid var(--border);
+      border-radius: 6px; background: var(--bg); cursor: pointer; font-size: 14px;
+    }
+    .sql-toolbar button:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .sql-toolbar .spacer { flex: 1; }
+    .sql-main { display: flex; flex: 1; overflow: hidden; }
+
+    /* 左侧：数据库面板 */
+    .sql-sidebar {
+      width: 240px; min-width: 200px; background: var(--card-bg);
+      border-right: 1px solid var(--border); overflow-y: auto; padding: 12px;
+    }
+    .sql-sidebar h4 { font-size: 13px; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; }
+    .db-item { margin-bottom: 4px; }
+    .db-name {
+      display: flex; align-items: center; gap: 6px; padding: 6px 8px;
+      border-radius: 6px; cursor: pointer; font-weight: 600;
+    }
+    .db-name:hover { background: var(--bg); }
+    .db-name.current { background: #eef2ff; color: var(--primary); }
+    .db-name .arrow { font-size: 10px; transition: transform .2s; }
+    .db-item.collapsed .arrow { transform: rotate(-90deg); }
+    .db-item.collapsed .table-list { display: none; }
+    .table-list { padding-left: 20px; margin: 4px 0; }
+    .table-item {
+      padding: 4px 8px; border-radius: 4px; cursor: pointer;
+      font-size: 13px; color: var(--text-muted); display: flex; align-items: center; gap: 6px;
+    }
+    .table-item:hover { background: var(--bg); color: var(--text); }
+    .table-item .col-count { margin-left: auto; font-size: 11px; opacity: .6; }
+
+    /* 中间：编辑器 + 结果 */
+    .sql-center { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    .sql-editor-wrap { flex: 1; display: flex; flex-direction: column; border-bottom: 1px solid var(--border); }
+    .sql-editor {
+      flex: 1; width: 100%; padding: 16px; font-family: 'Consolas', 'Monaco', monospace;
+      font-size: 14px; line-height: 1.6; border: none; resize: none; outline: none;
+      background: #1e293b; color: #e2e8f0; tab-size: 2;
+    }
+    .sql-run-bar { display: flex; gap: 8px; padding: 8px 16px; background: #f1f5f9; align-items: center; }
+    .btn-run {
+      padding: 8px 24px; background: var(--success); color: #fff; border: none;
+      border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 14px;
+    }
+    .btn-run:hover { background: #059669; }
+    .btn-secondary {
+      padding: 6px 14px; background: #fff; color: var(--text); border: 1px solid var(--border);
+      border-radius: 6px; cursor: pointer; font-size: 13px;
+    }
+    .btn-secondary:hover { background: var(--bg); }
+    .sql-status { margin-left: auto; font-size: 13px; color: var(--text-muted); }
+
+    /* 结果区 */
+    .sql-result { flex: 1; overflow: auto; background: var(--card-bg); }
+    .result-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .result-table th, .result-table td {
+      padding: 8px 12px; border-bottom: 1px solid var(--border); text-align: left; white-space: nowrap;
+    }
+    .result-table th { background: #f1f5f9; font-weight: 600; position: sticky; top: 0; }
+    .result-table tr:hover { background: #f8fafc; }
+    .result-info { padding: 12px 16px; color: var(--text-muted); font-size: 13px; border-bottom: 1px solid var(--border); }
+    .result-error { padding: 12px 16px; background: #fef2f2; color: #b91c1c; border-bottom: 1px solid #fecaca; }
+    .result-msg { padding: 12px 16px; color: var(--success); font-size: 13px; }
+
+    /* 右侧：课程面板 */
+    .sql-lessons {
+      width: 300px; min-width: 260px; background: var(--card-bg);
+      border-left: 1px solid var(--border); overflow-y: auto; padding: 16px;
+    }
+    .lesson-group { margin-bottom: 20px; }
+    .lesson-group-title {
+      font-size: 13px; font-weight: 700; color: var(--primary);
+      margin-bottom: 8px; padding-bottom: 4px; border-bottom: 2px solid var(--primary);
+    }
+    .lesson-item {
+      display: block; padding: 8px 10px; border-radius: 6px; cursor: pointer;
+      font-size: 14px; color: var(--text); margin-bottom: 2px;
+    }
+    .lesson-item:hover { background: var(--bg); }
+    .lesson-item.active { background: #eef2ff; color: var(--primary); font-weight: 600; }
+
+    /* 教程内容弹层 */
+    .lesson-modal {
+      position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 1000;
+      display: flex; align-items: center; justify-content: center; padding: 20px;
+    }
+    .lesson-content {
+      background: #fff; border-radius: 12px; max-width: 680px; width: 100%;
+      max-height: 85vh; overflow-y: auto; padding: 32px;
+    }
+    .lesson-content h2 { color: var(--primary); margin-bottom: 16px; }
+    .lesson-content p { margin-bottom: 12px; line-height: 1.8; color: var(--text); }
+    .lesson-content pre {
+      background: #1e293b; color: #e2e8f0; padding: 16px; border-radius: 8px;
+      overflow-x: auto; margin: 12px 0; font-size: 13px; line-height: 1.6;
+    }
+    .lesson-content code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-size: 13px; }
+    .lesson-actions { display: flex; gap: 12px; margin-top: 20px; }
+    .lesson-actions button { padding: 10px 20px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; }
+    .btn-load { background: var(--primary); color: #fff; }
+    .btn-close { background: var(--border); color: var(--text); }
+
+    .hidden { display: none !important; }
+
+    @media (max-width: 900px) {
+      .sql-sidebar { width: 180px; min-width: 160px; }
+      .sql-lessons { display: none; }
+    }
+    @media (max-width: 640px) {
+      .sql-sidebar { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="sql-app">
+  <!-- 工具栏 -->
+  <div class="sql-toolbar">
+    <select id="db-select" title="当前数据库">
+      <option value="main">main</option>
+    </select>
+    <button id="btn-new-db" title="新建数据库">+ 新建库</button>
+    <button id="btn-drop-db" title="删除当前数据库">删除库</button>
+    <span class="spacer"></span>
+    <button id="btn-load-sample" class="btn-secondary">📦 加载示例数据</button>
+    <button id="btn-clear" class="btn-secondary">🗑️ 清空编辑器</button>
+    <button id="btn-export" class="btn-secondary">💾 导出数据库</button>
+    <button id="btn-reset" class="btn-secondary" style="color:var(--danger)">♻️ 重置全部</button>
+  </div>
+
+  <!-- 主体三栏 -->
+  <div class="sql-main">
+    <!-- 左侧：数据库表结构 -->
+    <aside class="sql-sidebar" id="sidebar">
+      <h4>数据库 & 表</h4>
+      <div id="db-tree"></div>
+    </aside>
+
+    <!-- 中间：编辑器 + 结果 -->
+    <div class="sql-center">
+      <div class="sql-editor-wrap">
+        <textarea id="sql-editor" class="sql-editor" spellcheck="false"
+          placeholder="在此输入 SQL 语句，支持多条（用分号分隔）...&#10;&#10;示例：&#10;CREATE TABLE users (id INTEGER PRIMARY KEY, name TEXT, age INTEGER);&#10;INSERT INTO users (name, age) VALUES ('张三', 25);&#10;SELECT * FROM users;">CREATE TABLE users (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  age INTEGER,
+  email TEXT UNIQUE
+);
+
+INSERT INTO users (name, age, email) VALUES
+  ('张三', 25, 'zhangsan@example.com'),
+  ('李四', 30, 'lisi@example.com'),
+  ('王五', 22, 'wangwu@example.com');
+
+SELECT * FROM users;</textarea>
+        <div class="sql-run-bar">
+          <button class="btn-run" id="btn-run">▶ 运行 (Ctrl+Enter)</button>
+          <button class="btn-secondary" id="btn-format">格式化</button>
+          <span class="sql-status" id="sql-status">就绪</span>
+        </div>
+      </div>
+      <div class="sql-result" id="sql-result">
+        <div class="result-info">点击「运行」或按 Ctrl+Enter 执行 SQL</div>
+      </div>
+    </div>
+
+    <!-- 右侧：课程 -->
+    <aside class="sql-lessons" id="lessons">
+      <h4 style="font-size:14px;margin-bottom:12px;color:var(--text)">📚 SQL 教程</h4>
+      <div id="lesson-list"></div>
+      <div id="ad-side" style="margin-top:20px"></div>
+    </aside>
+  </div>
+</div>
+
+<!-- 教程内容弹层 -->
+<div class="lesson-modal hidden" id="lesson-modal">
+  <div class="lesson-content" id="lesson-content"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/sql-wasm.js"></script>
+<script src="../assets/js/tracker.js?v=2" data-site="tools"></script>
+<script src="../assets/js/common.js?v=2"></script>
+<script>
+App.mount({
+  site: 'tools',
+  brand: 'SQL 在线学习',
+  brandIcon: '🗄️',
+  nav: [
+    { label: '工具箱', href: 'index.html' },
+    { label: 'SQL 学习', href: 'sql.html' }
+  ]
+});
+document.getElementById('ad-side').appendChild(App.ad('sidebar'));
+if (window.MTA) MTA.track('view_tool', { tool: 'sql' });
+
+/* ===================== SQL 引擎 ===================== */
+let SQL = null;
+let db = null;
+let attachedDbs = []; // 附加的数据库名
+const STORAGE_KEY = 'sql_learning_db';
+
+async function initSql() {
+  SQL = await initSqlJs({
+    locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/${file}`
+  });
+  // 尝试从 localStorage 恢复
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const arr = Uint8Array.from(atob(saved), c => c.charCodeAt(0));
+      db = new SQL.Database(arr);
+    } else {
+      db = new SQL.Database();
+    }
+  } catch (e) {
+    db = new SQL.Database();
+  }
+  // 恢复附加库
+  try {
+    const attachedStr = localStorage.getItem(STORAGE_KEY + '_attached');
+    if (attachedStr) {
+      const attachedBackup = JSON.parse(attachedStr);
+      for (const item of attachedBackup) {
+        try {
+          db.run(`ATTACH DATABASE '' AS ${item.name}`);
+          attachedDbs.push(item.name);
+          const lines = item.sql.split('\x00');
+          for (const line of lines) {
+            if (line.trim() && !line.trim().toUpperCase().startsWith('ATTACH')) {
+              try { db.run(line); } catch (e) {}
+            }
+          }
+        } catch (e) {}
+      }
+    }
+  } catch (e) {}
+  renderDbTree();
+  updateDbSelect();
+  setStatus('引擎就绪 ✓');
+}
+
+function saveDb() {
+  try {
+    // db.export() 会破坏 ATTACH 状态，需先备份附加库再恢复
+    const attachedBackup = [];
+    for (const dbName of attachedDbs) {
+      const sqls = [];
+      try {
+        const tables = db.exec(`SELECT name, sql FROM ${dbName}.sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'`);
+        if (tables.length) {
+          for (const row of tables[0].values) {
+            const tname = row[0];
+            let createSql = row[1];
+            if (createSql) {
+              // 给建表语句加上 schema 前缀，确保恢复时建到正确的库
+              createSql = createSql.replace(/CREATE TABLE (IF NOT EXISTS )?/i, `CREATE TABLE ${dbName}.`);
+              sqls.push(createSql + ';');
+            }
+            try {
+              const data = db.exec(`SELECT * FROM ${dbName}.${tname}`);
+              if (data.length && data[0].values.length) {
+                const cols = data[0].columns;
+                for (const drow of data[0].values) {
+                  const vals = drow.map(v => {
+                    if (v === null) return 'NULL';
+                    if (typeof v === 'string') return "'" + v.replace(/'/g, "''") + "'";
+                    return v;
+                  }).join(',');
+                  sqls.push(`INSERT INTO ${dbName}.${tname} (${cols.join(',')}) VALUES (${vals});`);
+                }
+              }
+            } catch (e) {}
+          }
+        }
+      } catch (e) {}
+      attachedBackup.push({ name: dbName, sql: sqls.join('\x00') });
+    }
+    // DETACH 所有附加库
+    for (const dbName of [...attachedDbs]) {
+      try { db.run(`DETACH DATABASE ${dbName}`); } catch (e) {}
+    }
+    // 导出 main
+    const data = db.export();
+    const bin = String.fromCharCode.apply(null, data);
+    localStorage.setItem(STORAGE_KEY, btoa(bin));
+    localStorage.setItem(STORAGE_KEY + '_attached', JSON.stringify(attachedBackup));
+    // 重新 ATTACH 并恢复数据
+    for (const item of attachedBackup) {
+      try {
+        db.run(`ATTACH DATABASE '' AS ${item.name}`);
+        const lines = item.sql.split('\x00');
+        for (const line of lines) {
+          if (line.trim() && !line.trim().toUpperCase().startsWith('ATTACH')) {
+            try { db.run(line); } catch (e) {}
+          }
+        }
+      } catch (e) {}
+    }
+  } catch (e) { /* 存储满了忽略 */ }
+}
+
+// 执行单条 SQL，返回 { columns, values } 或 null（非查询语句）
+function execOne(sql) {
+  sql = sql.trim();
+  if (!sql) return null;
+  const res = db.exec(sql);
+  if (res.length === 0) return null;
+  return { columns: res[0].columns, values: res[0].values };
+}
+
+// 执行多条 SQL（分号分割，注意字符串内的分号）
+function runAll(sqlText) {
+  const results = [];
+  // 简易分割：按分号，但跳过引号内的
+  const statements = splitSql(sqlText);
+  for (const stmt of statements) {
+    const s = stmt.trim();
+    if (!s) continue;
+    try {
+      const r = execOne(s);
+      results.push({ sql: s, ok: true, result: r });
+    } catch (e) {
+      results.push({ sql: s, ok: false, error: e.message });
+      break; // 出错停止
+    }
+  }
+  saveDb();
+  renderDbTree();
+  return results;
+}
+
+function splitSql(text) {
+  const stmts = [];
+  let cur = '';
+  let inStr = false;
+  let strChar = '';
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (inStr) {
+      cur += c;
+      if (c === strChar && text[i-1] !== '\\') inStr = false;
+    } else {
+      if (c === "'" || c === '"' || c === '`') {
+        inStr = true; strChar = c; cur += c;
+      } else if (c === ';') {
+        stmts.push(cur); cur = '';
+      } else {
+        cur += c;
+      }
+    }
+  }
+  if (cur.trim()) stmts.push(cur);
+  return stmts;
+}
+
+/* ===================== UI 渲染 ===================== */
+const $ = id => document.getElementById(id);
+
+function setStatus(msg) { $('sql-status').textContent = msg; }
+
+// 事件委托：点击表名自动加载 SELECT
+$('db-tree').addEventListener('click', e => {
+  const row = e.target.closest('.table-item');
+  if (row) {
+    const tbl = row.dataset.table;
+    const dbn = row.dataset.db;
+    if (tbl) {
+      $('sql-editor').value = `SELECT * FROM ${dbn !== 'main' ? dbn + '.' : ''}${tbl};`;
+      $('btn-run').click();
+    }
+  }
+});
+
+function renderDbTree() {
+  const tree = $('db-tree');
+  tree.innerHTML = '';
+  // main 库
+  const mainTables = getTables('main');
+  tree.appendChild(buildDbNode('main', mainTables, true));
+  // 附加库
+  for (const dbName of attachedDbs) {
+    const tables = getTables(dbName);
+    tree.appendChild(buildDbNode(dbName, tables, false));
+  }
+}
+
+function buildDbNode(dbName, tables, isCurrent) {
+  const item = document.createElement('div');
+  item.className = 'db-item';
+  item.dataset.db = dbName;
+  const nameEl = document.createElement('div');
+  nameEl.className = 'db-name' + (isCurrent ? ' current' : '');
+  nameEl.innerHTML = `<span class="arrow">▼</span> 📁 ${dbName}`;
+  nameEl.onclick = () => {
+    item.classList.toggle('collapsed');
+    if (!isCurrent) {
+      $('db-select').value = dbName;
+      switchDb(dbName);
+    }
+  };
+  item.appendChild(nameEl);
+  const list = document.createElement('div');
+  list.className = 'table-list';
+  for (const t of tables) {
+    const row = document.createElement('div');
+    row.className = 'table-item';
+    row.dataset.table = t.name;
+    row.dataset.db = dbName;
+    row.innerHTML = `📋 ${t.name}<span class="col-count">${t.cols}列</span>`;
+    list.appendChild(row);
+  }
+  if (tables.length === 0) {
+    const empty = document.createElement('div');
+    empty.style.cssText = 'padding:4px 8px;font-size:12px;color:var(--text-muted)';
+    empty.textContent = '(无表)';
+    list.appendChild(empty);
+  }
+  item.appendChild(list);
+  return item;
+}
+
+function getTables(dbName) {
+  const prefix = dbName !== 'main' ? dbName + '.' : '';
+  try {
+    const r = db.exec(`SELECT name FROM ${prefix}sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'`);
+    if (!r.length) return [];
+    return r[0].values.map(row => {
+      const name = row[0];
+      let cols = 0;
+      try {
+        const ci = db.exec(`PRAGMA ${prefix}table_info(${name})`);
+        cols = ci.length ? ci[0].values.length : 0;
+      } catch (e) {}
+      return { name, cols };
+    });
+  } catch (e) { return []; }
+}
+
+function updateDbSelect() {
+  const sel = $('db-select');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="main">main</option>';
+  for (const d of attachedDbs) {
+    const opt = document.createElement('option');
+    opt.value = d; opt.textContent = d;
+    sel.appendChild(opt);
+  }
+  if ([...sel.options].some(o => o.value === cur)) sel.value = cur;
+}
+
+function switchDb(name) {
+  renderDbTree();
+  setStatus(`当前数据库: ${name}`);
+}
+
+function showResults(results) {
+  const box = $('sql-result');
+  box.innerHTML = '';
+  for (const r of results) {
+    if (!r.ok) {
+      const err = document.createElement('div');
+      err.className = 'result-error';
+      err.innerHTML = `<strong>❌ 执行错误：</strong>${escapeHtml(r.error)}<br><small>SQL: ${escapeHtml(r.sql.slice(0, 200))}</small>`;
+      box.appendChild(err);
+      continue;
+    }
+    if (r.result) {
+      const info = document.createElement('div');
+      info.className = 'result-info';
+      info.textContent = `✓ 查询成功，返回 ${r.result.values.length} 行`;
+      box.appendChild(info);
+      const tbl = document.createElement('table');
+      tbl.className = 'result-table';
+      const thead = document.createElement('tr');
+      r.result.columns.forEach(c => {
+        const th = document.createElement('th'); th.textContent = c; thead.appendChild(th);
+      });
+      tbl.appendChild(thead);
+      r.result.values.forEach(row => {
+        const tr = document.createElement('tr');
+        row.forEach(v => {
+          const td = document.createElement('td');
+          td.textContent = v === null ? 'NULL' : String(v);
+          tr.appendChild(td);
+        });
+        tbl.appendChild(tr);
+      });
+      box.appendChild(tbl);
+    } else {
+      const msg = document.createElement('div');
+      msg.className = 'result-msg';
+      msg.textContent = '✓ 执行成功（无返回结果）';
+      box.appendChild(msg);
+    }
+  }
+  if (results.length === 0) {
+    box.innerHTML = '<div class="result-info">没有可执行的语句</div>';
+  }
+}
+
+function escapeHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+/* ===================== 事件绑定 ===================== */
+$('btn-run').onclick = () => {
+  const sql = $('sql-editor').value;
+  setStatus('执行中...');
+  try {
+    const t0 = performance.now();
+    const results = runAll(sql);
+    const t1 = performance.now();
+    showResults(results);
+    const hasErr = results.some(r => !r.ok);
+    setStatus(hasErr ? '执行出错' : `执行完成 (${(t1-t0).toFixed(1)}ms)`);
+  } catch (e) {
+    showResults([{ sql, ok: false, error: e.message }]);
+    setStatus('执行出错');
+  }
+};
+
+$('sql-editor').addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+    e.preventDefault();
+    $('btn-run').click();
+  }
+});
+
+// 新建数据库（ATTACH :memory:）
+$('btn-new-db').onclick = () => {
+  const name = prompt('请输入新数据库名称（字母数字下划线）：', 'mydb');
+  if (!name) return;
+  if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(name)) {
+    alert('数据库名只能包含字母、数字、下划线，且不能以数字开头');
+    return;
+  }
+  if (name === 'main' || attachedDbs.includes(name)) {
+    alert('该数据库名已存在');
+    return;
+  }
+  try {
+    db.run(`ATTACH DATABASE '' AS ${name}`);
+    attachedDbs.push(name);
+    updateDbSelect();
+    $('db-select').value = name;
+    switchDb(name);
+    renderDbTree();
+    saveDb();
+    setStatus(`已创建数据库: ${name}`);
+  } catch (e) {
+    alert('创建失败: ' + e.message);
+  }
+};
+
+// 删除数据库
+$('btn-drop-db').onclick = () => {
+  const name = $('db-select').value;
+  if (name === 'main') { alert('main 数据库不能删除'); return; }
+  if (!confirm(`确定删除数据库 "${name}" 及其所有表吗？`)) return;
+  try {
+    db.run(`DETACH DATABASE ${name}`);
+    attachedDbs = attachedDbs.filter(d => d !== name);
+    $('db-select').value = 'main';
+    switchDb('main');
+    updateDbSelect();
+    renderDbTree();
+    saveDb();
+  } catch (e) {
+    alert('删除失败: ' + e.message);
+  }
+};
+
+$('db-select').onchange = e => switchDb(e.target.value);
+
+// 清空编辑器
+$('btn-clear').onclick = () => {
+  if (confirm('确定清空编辑器内容吗？')) $('sql-editor').value = '';
+};
+
+// 格式化（简单处理：关键字大写）
+$('btn-format').onclick = () => {
+  const sql = $('sql-editor').value;
+  const keywords = ['select','from','where','insert','into','values','update','set','delete',
+    'create','table','database','drop','alter','add','column','primary','key','foreign','references',
+    'and','or','not','null','is','in','like','between','order','by','group','having','limit',
+    'join','inner','left','right','on','as','distinct','count','sum','avg','max','min',
+    'integer','text','real','blob','default','unique','check','constraint','index','view'];
+  let formatted = sql;
+  keywords.forEach(kw => {
+    const re = new RegExp('\\b' + kw + '\\b', 'gi');
+    formatted = formatted.replace(re, kw.toUpperCase());
+  });
+  $('sql-editor').value = formatted;
+};
+
+// 加载示例数据
+$('btn-load-sample').onclick = () => {
+  if (!confirm('将向当前 main 库写入电商示例数据（users/products/orders），继续吗？')) return;
+  const sample = `
+CREATE TABLE IF NOT EXISTS users (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  email TEXT UNIQUE,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE IF NOT EXISTS products (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  price REAL NOT NULL,
+  stock INTEGER DEFAULT 0
+);
+CREATE TABLE IF NOT EXISTS orders (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER,
+  product_id INTEGER,
+  quantity INTEGER DEFAULT 1,
+  total REAL,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id),
+  FOREIGN KEY (product_id) REFERENCES products(id)
+);
+INSERT INTO users (name, email) VALUES
+  ('张三', 'zhangsan@example.com'),
+  ('李四', 'lisi@example.com'),
+  ('王五', 'wangwu@example.com');
+INSERT INTO products (name, price, stock) VALUES
+  ('笔记本电脑', 5999.00, 50),
+  ('无线鼠标', 89.00, 200),
+  ('机械键盘', 399.00, 100),
+  ('显示器', 1299.00, 80);
+INSERT INTO orders (user_id, product_id, quantity, total) VALUES
+  (1, 1, 1, 5999.00),
+  (1, 2, 2, 178.00),
+  (2, 3, 1, 399.00),
+  (3, 4, 1, 1299.00),
+  (2, 2, 1, 89.00);
+SELECT '示例数据加载完成！' AS msg;`;
+  $('sql-editor').value = sample;
+  $('btn-run').click();
+};
+
+// 导出数据库
+$('btn-export').onclick = () => {
+  const data = db.export();
+  const blob = new Blob([data], { type: 'application/x-sqlite3' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'database.db';
+  a.click();
+  URL.revokeObjectURL(url);
+  setStatus('数据库已导出');
+};
+
+// 重置全部
+$('btn-reset').onclick = () => {
+  if (!confirm('确定重置所有数据库吗？所有数据将丢失！')) return;
+  db.close();
+  db = new SQL.Database();
+  attachedDbs = [];
+  localStorage.removeItem(STORAGE_KEY);
+  updateDbSelect();
+  renderDbTree();
+  $('sql-result').innerHTML = '<div class="result-info">已重置，所有数据已清空</div>';
+  setStatus('已重置');
+};
+
+/* ===================== 课程体系 ===================== */
+const lessons = [
+  { group: '入门基础', items: [
+    {
+      title: '1. SQL 简介与第一个查询',
+      body: `<h2>SQL 简介</h2>
+<p>SQL（Structured Query Language，结构化查询语言）是用于管理和操作关系型数据库的标准语言。几乎所有现代数据库（MySQL、PostgreSQL、SQLite、Oracle 等）都支持 SQL。</p>
+<p>SQL 主要分为四类：</p>
+<ul>
+  <li><strong>DDL</strong>（数据定义语言）：CREATE、ALTER、DROP —— 定义库表结构</li>
+  <li><strong>DML</strong>（数据操作语言）：INSERT、UPDATE、DELETE —— 操作数据</li>
+  <li><strong>DQL</strong>（数据查询语言）：SELECT —— 查询数据</li>
+  <li><strong>DCL</strong>（数据控制语言）：GRANT、REVOKE —— 权限控制</li>
+</ul>
+<p>下面是最简单的查询：</p>
+<pre>SELECT 'Hello, SQL!' AS greeting;</pre>`,
+      sql: "SELECT 'Hello, SQL!' AS greeting;"
+    },
+    {
+      title: '2. 创建数据库 (CREATE DATABASE)',
+      body: `<h2>创建数据库</h2>
+<p>在 SQLite 中，主数据库始终为 <code>main</code>。要创建新的数据库，使用 <code>ATTACH DATABASE</code> 附加一个内存数据库：</p>
+<pre>ATTACH DATABASE ':memory:' AS mydb;</pre>
+<p>之后就可以在 <code>mydb</code> 中创建表了：</p>
+<pre>CREATE TABLE mydb.users (id INTEGER, name TEXT);</pre>
+<p>也可以直接点击顶部的「+ 新建库」按钮快速创建。本工具中，每个数据库都是内存中的独立命名空间。</p>`,
+      sql: "ATTACH DATABASE ':memory:' AS mydb;\nCREATE TABLE mydb.users (id INTEGER PRIMARY KEY, name TEXT);"
+    },
+    {
+      title: '3. 创建表 (CREATE TABLE)',
+      body: `<h2>CREATE TABLE 语法</h2>
+<pre>CREATE TABLE 表名 (
+  列名 数据类型 [约束],
+  列名 数据类型 [约束],
+  ...
+);</pre>
+<p><strong>常用数据类型：</strong></p>
+<ul>
+  <li><code>INTEGER</code> —— 整数</li>
+  <li><code>TEXT</code> / <code>VARCHAR(n)</code> —— 字符串</li>
+  <li><code>REAL</code> / <code>FLOAT</code> —— 浮点数</li>
+  <li><code>BLOB</code> —— 二进制数据</li>
+</ul>
+<p><strong>常用约束：</strong></p>
+<ul>
+  <li><code>PRIMARY KEY</code> —— 主键，唯一且非空</li>
+  <li><code>NOT NULL</code> —— 不允许空值</li>
+  <li><code>UNIQUE</code> —— 值必须唯一</li>
+  <li><code>DEFAULT 值</code> —— 默认值</li>
+  <li><code>AUTOINCREMENT</code> —— 自增（SQLite）</li>
+</ul>`,
+      sql: `CREATE TABLE students (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  age INTEGER,
+  email TEXT UNIQUE,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP
+);`
+    },
+    {
+      title: '4. 插入数据 (INSERT)',
+      body: `<h2>INSERT 语法</h2>
+<pre>INSERT INTO 表名 (列1, 列2, ...) VALUES (值1, 值2, ...);</pre>
+<p>也可以一次插入多行：</p>
+<pre>INSERT INTO 表名 (列1, 列2) VALUES
+  (值1, 值2),
+  (值3, 值4),
+  (值5, 值6);</pre>`,
+      sql: `INSERT INTO students (name, age, email) VALUES
+  ('张三', 20, 'zhangsan@example.com'),
+  ('李四', 22, 'lisi@example.com'),
+  ('王五', 19, 'wangwu@example.com');
+
+SELECT * FROM students;`
+    },
+    {
+      title: '5. 查询数据 (SELECT)',
+      body: `<h2>SELECT 基本语法</h2>
+<pre>SELECT 列1, 列2 FROM 表名 WHERE 条件;</pre>
+<p><strong>WHERE 条件运算符：</strong></p>
+<ul>
+  <li><code>=</code> 等于，<code>!=</code> 或 <code>&lt;&gt;</code> 不等于</li>
+  <li><code>&gt;</code> <code>&lt;</code> <code>&gt;=</code> <code>&lt;=</code></li>
+  <li><code>AND</code> <code>OR</code> <code>NOT</code></li>
+  <li><code>IN (值列表)</code> —— 在集合中</li>
+  <li><code>LIKE '模式'</code> —— 模糊匹配（% 任意多字符，_ 单个字符）</li>
+  <li><code>BETWEEN a AND b</code> —— 范围</li>
+  <li><code>IS NULL</code> / <code>IS NOT NULL</code></li>
+</ul>`,
+      sql: `-- 查询所有列
+SELECT * FROM students;
+
+-- 条件查询
+SELECT name, age FROM students WHERE age >= 20;
+
+-- 模糊查询
+SELECT * FROM students WHERE name LIKE '张%';`
+    }
+  ]},
+  { group: '进阶操作', items: [
+    {
+      title: '6. 更新与删除 (UPDATE/DELETE)',
+      body: `<h2>UPDATE 语法</h2>
+<pre>UPDATE 表名 SET 列=值 WHERE 条件;</pre>
+<h2>DELETE 语法</h2>
+<pre>DELETE FROM 表名 WHERE 条件;</pre>
+<p style="color:#b91c1c"><strong>⚠️ 警告：</strong>UPDATE 和 DELETE 如果不加 WHERE 条件，会修改或删除表中所有数据！</p>`,
+      sql: `-- 更新
+UPDATE students SET age = 21 WHERE name = '张三';
+
+-- 删除
+DELETE FROM students WHERE age < 20;
+
+SELECT * FROM students;`
+    },
+    {
+      title: '7. 排序与分页 (ORDER BY/LIMIT)',
+      body: `<h2>ORDER BY 排序</h2>
+<pre>SELECT * FROM 表名 ORDER BY 列名 [ASC|DESC];</pre>
+<p><code>ASC</code> 升序（默认），<code>DESC</code> 降序。可多列排序：</p>
+<pre>ORDER BY age DESC, name ASC</pre>
+<h2>LIMIT 分页</h2>
+<pre>SELECT * FROM 表名 LIMIT 数量 OFFSET 偏移量;</pre>`,
+      sql: `-- 按年龄降序
+SELECT * FROM students ORDER BY age DESC;
+
+-- 取前 2 条
+SELECT * FROM students ORDER BY age DESC LIMIT 2;
+
+-- 跳过 1 条取 2 条（第 2 页，每页 2 条）
+SELECT * FROM students LIMIT 2 OFFSET 1;`
+    },
+    {
+      title: '8. 聚合函数与分组',
+      body: `<h2>常用聚合函数</h2>
+<ul>
+  <li><code>COUNT(*)</code> —— 行数</li>
+  <li><code>SUM(列)</code> —— 求和</li>
+  <li><code>AVG(列)</code> —— 平均值</li>
+  <li><code>MAX(列)</code> / <code>MIN(列)</code> —— 最大/最小值</li>
+</ul>
+<h2>GROUP BY 分组</h2>
+<pre>SELECT 列, 聚合函数 FROM 表名 GROUP BY 列 HAVING 条件;</pre>
+<p><code>HAVING</code> 用于分组后过滤，<code>WHERE</code> 用于分组前过滤。</p>`,
+      sql: `-- 先加点数据
+INSERT INTO students (name, age, email) VALUES
+  ('赵六', 25, 'zhaoliu@example.com'),
+  ('钱七', 22, 'qianqi@example.com');
+
+-- 统计人数和平均年龄
+SELECT COUNT(*) AS total, AVG(age) AS avg_age FROM students;
+
+-- 按年龄分组统计
+SELECT age, COUNT(*) AS cnt FROM students GROUP BY age ORDER BY age;`
+    },
+    {
+      title: '9. 多表连接 (JOIN)',
+      body: `<h2>JOIN 类型</h2>
+<ul>
+  <li><code>INNER JOIN</code> —— 内连接，只返回匹配的行</li>
+  <li><code>LEFT JOIN</code> —— 左连接，左表所有行 + 右表匹配行</li>
+  <li><code>RIGHT JOIN</code> —— 右连接（SQLite 支持有限）</li>
+</ul>
+<pre>SELECT a.列, b.列
+FROM 表a
+JOIN 表b ON a.关联列 = b.关联列;</pre>
+<p>点击「加载示例数据」可获得 users/products/orders 三张表用于练习 JOIN。</p>`,
+      sql: `-- 假设已加载示例数据
+SELECT u.name AS 用户, p.name AS 商品, o.quantity, o.total
+FROM orders o
+JOIN users u ON o.user_id = u.id
+JOIN products p ON o.product_id = p.id;`
+    },
+    {
+      title: '10. 修改表结构 (ALTER/DROP)',
+      body: `<h2>ALTER TABLE</h2>
+<p>SQLite 支持的 ALTER 操作有限，主要：</p>
+<ul>
+  <li><code>ALTER TABLE 表 RENAME TO 新名</code></li>
+  <li><code>ALTER TABLE 表 ADD COLUMN 列 类型</code></li>
+</ul>
+<h2>DROP TABLE</h2>
+<pre>DROP TABLE [IF EXISTS] 表名;</pre>`,
+      sql: `-- 添加列
+ALTER TABLE students ADD COLUMN phone TEXT;
+
+-- 查看表结构
+PRAGMA table_info(students);
+
+-- 删除表（演示，谨慎）
+-- DROP TABLE students;`
+    }
+  ]},
+  { group: '实战练习', items: [
+    {
+      title: '练习1：电商查询',
+      body: `<h2>电商数据库查询练习</h2>
+<p>先点击「加载示例数据」按钮，然后尝试以下查询：</p>
+<ol>
+  <li>查询所有用户</li>
+  <li>查询价格大于 100 的商品</li>
+  <li>查询每个用户的订单总金额</li>
+  <li>查询销量最高的商品</li>
+</ol>`,
+      sql: `-- 1. 所有用户
+SELECT * FROM users;
+
+-- 2. 价格 > 100 的商品
+SELECT * FROM products WHERE price > 100;
+
+-- 3. 每个用户的订单总金额
+SELECT u.name, SUM(o.total) AS total_amount
+FROM orders o
+JOIN users u ON o.user_id = u.id
+GROUP BY u.name;
+
+-- 4. 销量最高的商品
+SELECT p.name, SUM(o.quantity) AS sold
+FROM orders o
+JOIN products p ON o.product_id = p.id
+GROUP BY p.name
+ORDER BY sold DESC
+LIMIT 1;`
+    },
+    {
+      title: '练习2：学生成绩管理',
+      body: `<h2>学生成绩数据库</h2>
+<p>设计一个学生成绩管理系统，包含学生表、课程表、成绩表。</p>`,
+      sql: `CREATE TABLE students (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL
+);
+CREATE TABLE courses (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL
+);
+CREATE TABLE scores (
+  student_id INTEGER,
+  course_id INTEGER,
+  score REAL,
+  PRIMARY KEY (student_id, course_id)
+);
+INSERT INTO students VALUES (1,'张三'),(2,'李四'),(3,'王五');
+INSERT INTO courses VALUES (1,'数学'),(2,'英语'),(3,'物理');
+INSERT INTO scores VALUES
+  (1,1,90),(1,2,85),(1,3,88),
+  (2,1,78),(2,2,92),(2,3,80),
+  (3,1,95),(3,2,88),(3,3,91);
+
+-- 查询每个学生的平均分
+SELECT s.name, AVG(sc.score) AS avg_score
+FROM students s
+JOIN scores sc ON s.id = sc.student_id
+GROUP BY s.name
+ORDER BY avg_score DESC;`
+    }
+  ]}
+];
+
+function renderLessons() {
+  const list = $('lesson-list');
+  list.innerHTML = '';
+  lessons.forEach(group => {
+    const g = document.createElement('div');
+    g.className = 'lesson-group';
+    const title = document.createElement('div');
+    title.className = 'lesson-group-title';
+    title.textContent = group.group;
+    g.appendChild(title);
+    group.items.forEach((item, idx) => {
+      const it = document.createElement('div');
+      it.className = 'lesson-item';
+      it.textContent = item.title;
+      it.onclick = () => showLesson(item, it);
+      g.appendChild(it);
+    });
+    list.appendChild(g);
+  });
+}
+
+function showLesson(item, el) {
+  document.querySelectorAll('.lesson-item').forEach(i => i.classList.remove('active'));
+  el.classList.add('active');
+  const box = $('lesson-content');
+  box.innerHTML = item.body + `
+    <div class="lesson-actions">
+      <button class="btn-load" onclick="loadLessonSql()">📝 加载示例 SQL 到编辑器</button>
+      <button class="btn-close" onclick="closeLesson()">关闭</button>
+    </div>`;
+  $('lesson-modal').classList.remove('hidden');
+  window._currentLessonSql = item.sql;
+}
+
+window.loadLessonSql = function() {
+  if (window._currentLessonSql) {
+    $('sql-editor').value = window._currentLessonSql;
+    closeLesson();
+    setStatus('示例 SQL 已加载，点击运行执行');
+  }
+};
+
+window.closeLesson = function() {
+  $('lesson-modal').classList.add('hidden');
+};
+
+$('lesson-modal').onclick = e => {
+  if (e.target.id === 'lesson-modal') closeLesson();
+};
+
+/* ===================== 启动 ===================== */
+renderLessons();
+initSql().catch(e => {
+  setStatus('引擎加载失败: ' + e.message);
+  $('sql-result').innerHTML = `<div class="result-error">SQL 引擎加载失败：${escapeHtml(e.message)}<br>请检查网络连接（需要从 CDN 加载 sql.js）</div>`;
+});
+
+// 页面卸载前保存
+window.addEventListener('beforeunload', saveDb);
+</script>
+
+</body>
+</html>
