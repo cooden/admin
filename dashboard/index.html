@@ -196,57 +196,36 @@ var Dashboard = {
       String(d.getDate()).padStart(2, '0');
   },
 
-  // 读取某站点的本地存储数据
-  readSite: function (siteId) {
-    try {
-      return JSON.parse(localStorage.getItem('mta_store_' + siteId) || '{}');
-    } catch (e) { return {}; }
+  // 读取某站点数据：优先从后端 API 获取（全局汇总），降级到本地 localStorage
+  readSite: function (siteId, cb) {
+    var self = this;
+    fetch('http://101.96.236.163:3000/api/stats?site=' + siteId)
+      .then(function (r) { return r.json(); })
+      .then(function (res) {
+        if (res.ok && res.data) cb(res.data);
+        else {
+          // 降级：本地 localStorage
+          try { cb(JSON.parse(localStorage.getItem('mta_store_' + siteId) || '{}')); }
+          catch (e) { cb({}); }
+        }
+      })
+      .catch(function () {
+        try { cb(JSON.parse(localStorage.getItem('mta_store_' + siteId) || '{}')); }
+        catch (e) { cb({}); }
+      });
   },
 
-  // ===== 跨域拉取：通过隐藏 iframe + postMessage =====
-  fetchRemote: function (site, cb) {
-    var frame = document.createElement('iframe');
-    frame.style.display = 'none';
-    frame.src = site.url + 'index.html?mta_fetch=1';
-    var done = false;
-    function finish(data) {
-      if (done) return; done = true;
-      clearTimeout(timer);
-      frame.remove();
-      cb(data);
-    }
-    var timer = setTimeout(function () { finish(null); }, 4000);
-    window.addEventListener('message', function handler(e) {
-      if (e.data && e.data.type === 'mta_data' && e.data.site === site.id) {
-        window.removeEventListener('message', handler);
-        finish(e.data.store);
-      }
-    });
-    frame.onload = function () {
-      frame.contentWindow.postMessage({ type: 'mta_fetch' }, '*');
-    };
-    document.body.appendChild(frame);
-  },
-
-  // 聚合所有站点数据
+  // 聚合所有站点数据（从后端 API）
   loadAll: function (cb) {
     var results = {};
     var pending = this.sites.length;
     var self = this;
     this.sites.forEach(function (site) {
-      // 优先用本地存储（同域直接读）
-      var local = self.readSite(site.id);
-      if (local && local.total) {
-        results[site.id] = local;
+      self.readSite(site.id, function (data) {
+        results[site.id] = data && data.total ? data :
+          { total: { pv: 0, uv: 0, sessions: 0 }, daily: {}, pages: {}, refs: {}, events: {} };
         if (--pending === 0) cb(results);
-      } else {
-        // 尝试通过 iframe 拉取
-        self.fetchRemote(site, function (data) {
-          if (data) results[site.id] = data;
-          else results[site.id] = { total: { pv: 0, uv: 0, sessions: 0 }, daily: {}, pages: {}, refs: {}, events: {} };
-          if (--pending === 0) cb(results);
-        });
-      }
+      });
     });
   },
 

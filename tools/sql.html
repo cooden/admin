@@ -770,29 +770,6 @@ const lessons = [
   ('王五', 19, 'wangwu@example.com');
 
 SELECT * FROM students;`
-    },
-    {
-      title: '5. 查询数据 (SELECT)',
-      body: `<h2>SELECT 基本语法</h2>
-<pre>SELECT 列1, 列2 FROM 表名 WHERE 条件;</pre>
-<p><strong>WHERE 条件运算符：</strong></p>
-<ul>
-  <li><code>=</code> 等于，<code>!=</code> 或 <code>&lt;&gt;</code> 不等于</li>
-  <li><code>&gt;</code> <code>&lt;</code> <code>&gt;=</code> <code>&lt;=</code></li>
-  <li><code>AND</code> <code>OR</code> <code>NOT</code></li>
-  <li><code>IN (值列表)</code> —— 在集合中</li>
-  <li><code>LIKE '模式'</code> —— 模糊匹配（% 任意多字符，_ 单个字符）</li>
-  <li><code>BETWEEN a AND b</code> —— 范围</li>
-  <li><code>IS NULL</code> / <code>IS NOT NULL</code></li>
-</ul>`,
-      sql: `-- 查询所有列
-SELECT * FROM students;
-
--- 条件查询
-SELECT name, age FROM students WHERE age >= 20;
-
--- 模糊查询
-SELECT * FROM students WHERE name LIKE '张%';`
     }
   ]},
   { group: '进阶操作', items: [

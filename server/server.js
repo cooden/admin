@@ -76,6 +76,25 @@ function loadOrders() {
 }
 function saveOrders(o) { fs.writeFileSync(ORDERS_FILE, JSON.stringify(o, null, 2)); }
 
+// ============ 流量统计数据 ============
+var STATS_FILE = path.join(DATA_DIR, 'stats.json');
+function loadStats() {
+  try { return fs.existsSync(STATS_FILE) ? JSON.parse(fs.readFileSync(STATS_FILE, 'utf8')) : { sites: {} }; }
+  catch (e) { return { sites: {} }; }
+}
+function saveStats(s) { fs.writeFileSync(STATS_FILE, JSON.stringify(s, null, 2)); }
+function getSiteStats(siteId) {
+  var s = loadStats();
+  if (!s.sites[siteId]) {
+    s.sites[siteId] = { daily: {}, pages: {}, refs: {}, events: {}, total: { pv: 0, uv: 0, sessions: 0 } };
+  }
+  return s;
+}
+function todayStr() {
+  var d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+
 // ============ 工具函数 ============
 function md5(str) {
   return crypto.createHash('md5').update(str, 'utf8').digest('hex');
@@ -227,6 +246,63 @@ function handleNotify(params) {
   return { ok: true };
 }
 
+// ============ 流量统计处理 ============
+function handleTrack(body) {
+  if (!body || !body.site) return { ok: false, msg: '缺少 site' };
+  var siteId = body.site;
+  var s = getSiteStats(siteId);
+  var site = s.sites[siteId];
+  var t = todayStr();
+
+  if (body.type === 'pv') {
+    var d = site.daily[t] = site.daily[t] || { pv: 0, uv: 0, sessions: 0, _uids: {}, _sids: {} };
+    var isNewUV = !d._uids[body.uid];
+    var isNewSession = !d._sids[body.sid];
+    d._uids[body.uid] = 1;
+    d._sids[body.sid] = 1;
+    d.pv++;
+    if (isNewUV) d.uv++;
+    if (isNewSession) d.sessions++;
+    site.total.pv++;
+    if (isNewUV) site.total.uv++;
+    if (isNewSession) site.total.sessions++;
+    // 页面热度
+    site.pages[body.path] = site.pages[body.path] || { pv: 0, uv: 0, _uids: {} };
+    site.pages[body.path].pv++;
+    if (!site.pages[body.path]._uids[body.uid]) {
+      site.pages[body.path]._uids[body.uid] = 1;
+      site.pages[body.path].uv++;
+    }
+    // 来源
+    var src = (body.ref && body.ref.source) || '直接访问';
+    site.refs[src] = site.refs[src] || { pv: 0, uv: 0, _uids: {} };
+    site.refs[src].pv++;
+    if (!site.refs[src]._uids[body.uid]) {
+      site.refs[src]._uids[body.uid] = 1;
+      site.refs[src].uv++;
+    }
+  } else if (body.type === 'event') {
+    var key = body.event + '|' + t;
+    site.events[key] = site.events[key] || { count: 0, uv: 0, _uids: {} };
+    site.events[key].count++;
+    if (!site.events[key]._uids[body.uid]) {
+      site.events[key]._uids[body.uid] = 1;
+      site.events[key].uv++;
+    }
+    if (body.data) {
+      site.events[key].data = site.events[key].data || [];
+      if (site.events[key].data.length < 100) site.events[key].data.push(body.data);
+    }
+  } else if (body.type === 'duration') {
+    if (site.pages[body.path]) {
+      site.pages[body.path].totalDur = (site.pages[body.path].totalDur || 0) + (body.dur || 0);
+      site.pages[body.path].avgDur = Math.round(site.pages[body.path].totalDur / site.pages[body.path].pv);
+    }
+  }
+  saveStats(s);
+  return { ok: true };
+}
+
 // ============ HTTP 路由 ============
 var server = http.createServer(function (req, res) {
   var parsed = url.parse(req.url, true);
@@ -329,6 +405,28 @@ var server = http.createServer(function (req, res) {
       // 虎皮椒要求返回 success
       send(res, r.ok ? 200 : 400, r.ok ? 'success' : r);
     });
+    return;
+  }
+
+  // ---- 流量统计上报 ----
+  if (pathname === '/api/track' && method === 'POST') {
+    readBody(req, function (body) {
+      if (!body) { send(res, 400, { ok: false, msg: '参数错误' }); return; }
+      var r = handleTrack(body);
+      send(res, r.ok ? 200 : 400, r);
+    });
+    return;
+  }
+
+  // ---- 流量统计查询 ----
+  if (pathname === '/api/stats' && method === 'GET') {
+    var siteId = parsed.query.site;
+    var s = loadStats();
+    if (siteId) {
+      send(res, 200, { ok: true, site: siteId, data: s.sites[siteId] || null });
+    } else {
+      send(res, 200, { ok: true, sites: Object.keys(s.sites) });
+    }
     return;
   }
 

@@ -17,8 +17,8 @@
 
   var MTA = {
     siteId: 'default',
-    endpoint: '',          // 后端上报地址，留空则只存本地
-    version: '1.0.0',
+    endpoint: 'http://101.96.236.163:3000/api/track',  // 后端上报地址，全局汇总
+    version: '1.1.0',
     _startTime: Date.now(),
     _sent: false
   };
