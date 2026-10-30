@@ -430,6 +430,13 @@ var server = http.createServer(function (req, res) {
     return;
   }
 
+  // ---- 直接提供 stats.json（dashboard 直接读取） ----
+  if (pathname === '/stats.json' && method === 'GET') {
+    var allStats = loadStats();
+    send(res, 200, allStats);
+    return;
+  }
+
   // ---- 404 ----
   send(res, 404, { ok: false, msg: 'not found' });
 });

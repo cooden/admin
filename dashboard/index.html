@@ -196,37 +196,44 @@ var Dashboard = {
       String(d.getDate()).padStart(2, '0');
   },
 
-  // 读取某站点数据：优先从后端 API 获取（全局汇总），降级到本地 localStorage
-  readSite: function (siteId, cb) {
-    var self = this;
-    fetch('http://101.96.236.163:3000/api/stats?site=' + siteId)
-      .then(function (r) { return r.json(); })
-      .then(function (res) {
-        if (res.ok && res.data) cb(res.data);
-        else {
-          // 降级：本地 localStorage
-          try { cb(JSON.parse(localStorage.getItem('mta_store_' + siteId) || '{}')); }
-          catch (e) { cb({}); }
-        }
-      })
-      .catch(function () {
-        try { cb(JSON.parse(localStorage.getItem('mta_store_' + siteId) || '{}')); }
-        catch (e) { cb({}); }
-      });
+  // 读取某站点数据：直接从 stats.json 提取，降级到本地 localStorage
+  readSite: function (siteId, allStats, cb) {
+    var data = allStats && allStats.sites ? allStats.sites[siteId] : null;
+    if (data && data.total) {
+      cb(data);
+    } else {
+      // 降级：本地 localStorage
+      try { cb(JSON.parse(localStorage.getItem('mta_store_' + siteId) || '{}')); }
+      catch (e) { cb({}); }
+    }
   },
 
-  // 聚合所有站点数据（从后端 API）
+  // 聚合所有站点数据：直接 fetch stats.json 一次
   loadAll: function (cb) {
     var results = {};
-    var pending = this.sites.length;
     var self = this;
-    this.sites.forEach(function (site) {
-      self.readSite(site.id, function (data) {
-        results[site.id] = data && data.total ? data :
-          { total: { pv: 0, uv: 0, sessions: 0 }, daily: {}, pages: {}, refs: {}, events: {} };
-        if (--pending === 0) cb(results);
+    fetch('http://101.96.236.163:3000/stats.json')
+      .then(function (r) { return r.json(); })
+      .then(function (allStats) {
+        self.sites.forEach(function (site) {
+          self.readSite(site.id, allStats, function (data) {
+            results[site.id] = data && data.total ? data :
+              { total: { pv: 0, uv: 0, sessions: 0 }, daily: {}, pages: {}, refs: {}, events: {} };
+          });
+        });
+        cb(results);
+      })
+      .catch(function () {
+        // 后端不可用，逐个读 localStorage
+        var pending = self.sites.length;
+        self.sites.forEach(function (site) {
+          self.readSite(site.id, null, function (data) {
+            results[site.id] = data && data.total ? data :
+              { total: { pv: 0, uv: 0, sessions: 0 }, daily: {}, pages: {}, refs: {}, events: {} };
+            if (--pending === 0) cb(results);
+          });
+        });
       });
-    });
   },
 
   render: function () {
