@@ -183,13 +183,14 @@
     { id: 'blog',      icon: '📝', title: '生活百科',   desc: '健康科普、省电技巧、密码安全文章',       href: 'blog/index.html' },
     { id: 'resources', icon: '📚', title: '资源导航',   desc: '设计、开发、学习、效率精选资源',         href: 'resources/index.html' },
     { id: 'reviews',   icon: '⭐', title: '产品测评',   desc: '主流工具深度对比测评，帮你选对',         href: 'reviews/index.html' },
-    { id: 'games',     icon: '🎮', title: '小游戏站',   desc: '刀光剑影躲避飞刀，扁平3D质感休闲游戏',   href: 'games/index.html' }
+    { id: 'games',     icon: '🎮', title: '小游戏站',   desc: '刀光剑影躲避飞刀，扁平3D质感休闲游戏',   href: 'games/index.html' },
+    { id: 'school',    icon: '🎓', title: '校园学习站', desc: '学习方法、考试技巧、学科知识点总结',     href: 'school/index.html' }
   ];
 
   // 计算当前页面到站点根目录的相对路径前缀（兼容 GitHub Pages 子路径）
   function getBasePath() {
     var parts = location.pathname.split('/').filter(Boolean);
-    var siteDirs = ['students', 'tools', 'blog', 'resources', 'reviews', 'dashboard', 'games'];
+    var siteDirs = ['students', 'tools', 'blog', 'resources', 'reviews', 'dashboard', 'games', 'school'];
     var siteIdx = -1;
     for (var i = 0; i < parts.length; i++) {
       if (siteDirs.indexOf(parts[i]) !== -1) { siteIdx = i; break; }
