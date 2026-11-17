@@ -93,7 +93,7 @@
       '<div class="footer-col"><h4>工具</h4><ul>' + toolsHtml + '</ul></div>' +
       '<div class="footer-col"><h4>文章</h4><ul>' + articlesHtml + '</ul></div>' +
       '<div class="footer-col"><h4>关于</h4><ul>' +
-        '<li><a href="../dashboard/index.html" target="_blank">流量监测面板</a></li>' +
+        '<li><a href="../dashboard/index.html" target="_blank" rel="noopener">流量监测面板</a></li>' +
         '<li><a href="about.html">关于我们</a></li>' +
         '<li><a href="privacy.html">隐私政策</a></li>' +
       '</ul></div>';
@@ -131,7 +131,9 @@
     var count = type === 'leaderboard' ? 3 : (type === 'sidebar' ? 2 : 1);
     var picks = others.slice(0, count);
     var cards = picks.map(function (s) {
-      return '<a href="' + base + s.href + '" class="sibling-card" data-site="' + s.id + '">' +
+      var isExternal = /^https?:\/\//i.test(s.href);
+      var attrs = isExternal ? ' target="_blank" rel="noopener"' : '';
+      return '<a href="' + (isExternal ? s.href : base + s.href) + '" class="sibling-card" data-site="' + s.id + '"' + attrs + '>' +
                '<span class="sibling-icon">' + s.icon + '</span>' +
                '<div class="sibling-body">' +
                  '<h4>' + s.title + '</h4>' +
@@ -183,7 +185,8 @@
     { id: 'blog',      icon: '📝', title: '生活百科',   desc: '健康科普、省电技巧、密码安全文章',       href: 'blog/index.html' },
     { id: 'resources', icon: '📚', title: '资源导航',   desc: '设计、开发、学习、效率精选资源',         href: 'resources/index.html' },
     { id: 'reviews',   icon: '⭐', title: '产品测评',   desc: '主流工具深度对比测评，帮你选对',         href: 'reviews/index.html' },
-    { id: 'games',     icon: '🎮', title: '小游戏站',   desc: '刀光剑影躲避飞刀，扁平3D质感休闲游戏',   href: 'games/index.html' }
+    { id: 'games',     icon: '🎮', title: '小游戏站',   desc: '刀光剑影躲避飞刀，扁平3D质感休闲游戏',   href: 'games/index.html' },
+    { id: 'school',    icon: '🎓', title: '技校分布',   desc: '全国技校分布查询，学校信息、专业设置、招生详情', href: 'https://cooden.github.io/school' }
   ];
 
   // 计算当前页面到站点根目录的相对路径前缀（兼容 GitHub Pages 子路径）

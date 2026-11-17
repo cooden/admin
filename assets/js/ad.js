@@ -144,7 +144,9 @@
     }
 
     var cards = picks.map(function (s) {
-      return '<a href="' + s.href + '" class="sibling-card" data-site="' + s.id + '">' +
+      var isExternal = /^https?:\/\//i.test(s.href);
+      var attrs = isExternal ? ' target="_blank" rel="noopener"' : '';
+      return '<a href="' + s.href + '" class="sibling-card" data-site="' + s.id + '"' + attrs + '>' +
                '<span class="sibling-icon">' + s.icon + '</span>' +
                '<div class="sibling-body">' +
                  '<h4>' + s.title + '</h4>' +
