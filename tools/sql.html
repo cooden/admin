@@ -127,17 +127,6 @@
     @media (max-width: 640px) {
       .sql-sidebar { display: none; }
     }
-    /* 广告：右侧面板内，卡片上下排列 */
-    #ad-side { margin-top: 16px; }
-    #ad-side .sibling-slot { flex-direction: column; gap: 10px; }
-    #ad-side .sibling-card {
-      flex-direction: row;
-      text-align: left;
-      padding: 12px 14px;
-    }
-    #ad-side .sibling-icon { font-size: 1.6rem; }
-    #ad-side .sibling-body h4 { font-size: .9rem; }
-    #ad-side .sibling-body p { font-size: .78rem; }
   </style>
 
   <!-- 百度统计 -->
@@ -202,13 +191,13 @@ SELECT * FROM users;</textarea>
       <div class="sql-result" id="sql-result">
         <div class="result-info">点击「运行」或按 Ctrl+Enter 执行 SQL</div>
       </div>
+      <div id="ad-bottom"></div>
     </div>
 
     <!-- 右侧：课程 -->
     <aside class="sql-lessons" id="lessons">
       <h4 style="font-size:14px;margin-bottom:12px;color:var(--text)">📚 SQL 教程</h4>
       <div id="lesson-list"></div>
-      <div id="ad-side"></div>
     </aside>
   </div>
 </div>
@@ -231,7 +220,7 @@ App.mount({
     { label: 'SQL 学习', href: 'sql.html' }
   ]
 });
-document.getElementById('ad-side').appendChild(App.ad('sidebar'));
+document.getElementById('ad-bottom').appendChild(App.ad('leaderboard'));
 if (window.MTA) MTA.track('view_tool', { tool: 'sql' });
 
 /* ===================== SQL 引擎 ===================== */
@@ -344,9 +333,69 @@ function saveDb() {
 function execOne(sql) {
   sql = sql.trim();
   if (!sql) return null;
-  const res = db.exec(sql);
+  // 拦截 MySQL 方言语句（SHOW / USE / DESCRIBE），SQLite 不支持
+  const special = handleMysqlDialect(sql);
+  if (special !== undefined) return special;
+  // 若当前库非 main 且语句未带库前缀，自动补前缀（简单场景）
+  const toRun = (currentDb !== 'main') ? autoPrefix(sql) : sql;
+  const res = db.exec(toRun);
   if (res.length === 0) return null;
   return { columns: res[0].columns, values: res[0].values };
+}
+
+let currentDb = 'main';
+
+// 处理 MySQL 特有语法，返回结果对象；不匹配返回 undefined
+function handleMysqlDialect(sql) {
+  // USE dbname
+  const mUse = /^USE\s+([`\w]+)/i.exec(sql);
+  if (mUse) {
+    const name = mUse[1].replace(/`/g, '');
+    if (name === 'main' || attachedDbs.includes(name)) {
+      currentDb = name;
+      $('db-select').value = name;
+      switchDb(name);
+      return { columns: ['message'], values: [['已切换到数据库: ' + name]] };
+    }
+    throw new Error('未知数据库: ' + name + '（可用: main, ' + attachedDbs.join(', ') + '）');
+  }
+  // SHOW DATABASES / SHOW SCHEMAS
+  if (/^SHOW\s+(DATABASES|SCHEMAS)/i.test(sql)) {
+    const dbs = ['main', ...attachedDbs];
+    return { columns: ['Database'], values: dbs.map(d => [d]) };
+  }
+  // SHOW TABLES [FROM/IN dbname]
+  const mTables = /^SHOW\s+TABLES(\s+(FROM|IN)\s+([`\w]+))?/i.exec(sql);
+  if (mTables) {
+    const dbn = mTables[3] ? mTables[3].replace(/`/g, '') : currentDb;
+    const prefix = dbn !== 'main' ? dbn + '.' : '';
+    const r = db.exec(`SELECT name FROM ${prefix}sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'`);
+    const tables = r.length ? r[0].values.map(row => [row[0]]) : [];
+    return { columns: ['Tables_in_' + dbn], values: tables };
+  }
+  // SHOW COLUMNS FROM table / DESCRIBE table / DESC table
+  const mCols = /^(SHOW\s+COLUMNS\s+FROM|DESCRIBE|DESC)\s+([`\w.]+)/i.exec(sql);
+  if (mCols) {
+    let tbl = mCols[2].replace(/`/g, '');
+    if (!tbl.includes('.') && currentDb !== 'main') tbl = currentDb + '.' + tbl;
+    const r = db.exec(`PRAGMA table_info(${tbl})`);
+    if (!r.length) return { columns: ['Field','Type','Null','Key','Default','Extra'], values: [] };
+    const values = r[0].values.map(row => [
+      row[1], row[2] || 'TEXT', row[3] ? 'NO' : 'YES',
+      row[5] ? 'PRI' : '', row[4] ?? '', row[5] ? 'auto_increment' : ''
+    ]);
+    return { columns: ['Field','Type','Null','Key','Default','Extra'], values };
+  }
+  return undefined;
+}
+
+// 给不带库前缀的表名自动补 currentDb 前缀（仅处理常见关键字后紧跟的表名）
+function autoPrefix(sql) {
+  return sql.replace(/\b(FROM|JOIN|INTO|UPDATE|TABLE)\s+([`\w]+)(?!\.)/gi,
+    (m, kw, tbl) => {
+      if (tbl.toLowerCase() === 'sqlite_master' || tbl.toLowerCase() === currentDb) return m;
+      return kw + ' ' + currentDb + '.' + tbl;
+    });
 }
 
 // 执行多条 SQL（分号分割，注意字符串内的分号）
@@ -490,6 +539,7 @@ function updateDbSelect() {
 }
 
 function switchDb(name) {
+  currentDb = name;
   renderDbTree();
   setStatus(`当前数据库: ${name}`);
 }
@@ -726,17 +776,7 @@ const lessons = [
       sql: "SELECT 'Hello, SQL!' AS greeting;"
     },
     {
-      title: '2. 创建数据库 (CREATE DATABASE)',
-      body: `<h2>创建数据库</h2>
-<p>在 SQLite 中，主数据库始终为 <code>main</code>。要创建新的数据库，使用 <code>ATTACH DATABASE</code> 附加一个内存数据库：</p>
-<pre>ATTACH DATABASE ':memory:' AS mydb;</pre>
-<p>之后就可以在 <code>mydb</code> 中创建表了：</p>
-<pre>CREATE TABLE mydb.users (id INTEGER, name TEXT);</pre>
-<p>也可以直接点击顶部的「+ 新建库」按钮快速创建。本工具中，每个数据库都是内存中的独立命名空间。</p>`,
-      sql: "ATTACH DATABASE ':memory:' AS mydb;\nCREATE TABLE mydb.users (id INTEGER PRIMARY KEY, name TEXT);"
-    },
-    {
-      title: '3. 创建表 (CREATE TABLE)',
+      title: '2. 创建表 (CREATE TABLE)',
       body: `<h2>CREATE TABLE 语法</h2>
 <pre>CREATE TABLE 表名 (
   列名 数据类型 [约束],
@@ -767,7 +807,7 @@ const lessons = [
 );`
     },
     {
-      title: '4. 插入数据 (INSERT)',
+      title: '3. 插入数据 (INSERT)',
       body: `<h2>INSERT 语法</h2>
 <pre>INSERT INTO 表名 (列1, 列2, ...) VALUES (值1, 值2, ...);</pre>
 <p>也可以一次插入多行：</p>
@@ -785,7 +825,7 @@ SELECT * FROM students;`
   ]},
   { group: '进阶操作', items: [
     {
-      title: '6. 更新与删除 (UPDATE/DELETE)',
+      title: '4. 更新与删除 (UPDATE/DELETE)',
       body: `<h2>UPDATE 语法</h2>
 <pre>UPDATE 表名 SET 列=值 WHERE 条件;</pre>
 <h2>DELETE 语法</h2>
@@ -800,7 +840,7 @@ DELETE FROM students WHERE age < 20;
 SELECT * FROM students;`
     },
     {
-      title: '7. 排序与分页 (ORDER BY/LIMIT)',
+      title: '5. 排序与分页 (ORDER BY/LIMIT)',
       body: `<h2>ORDER BY 排序</h2>
 <pre>SELECT * FROM 表名 ORDER BY 列名 [ASC|DESC];</pre>
 <p><code>ASC</code> 升序（默认），<code>DESC</code> 降序。可多列排序：</p>
@@ -817,7 +857,7 @@ SELECT * FROM students ORDER BY age DESC LIMIT 2;
 SELECT * FROM students LIMIT 2 OFFSET 1;`
     },
     {
-      title: '8. 聚合函数与分组',
+      title: '6. 聚合函数与分组',
       body: `<h2>常用聚合函数</h2>
 <ul>
   <li><code>COUNT(*)</code> —— 行数</li>
@@ -840,7 +880,7 @@ SELECT COUNT(*) AS total, AVG(age) AS avg_age FROM students;
 SELECT age, COUNT(*) AS cnt FROM students GROUP BY age ORDER BY age;`
     },
     {
-      title: '9. 多表连接 (JOIN)',
+      title: '7. 多表连接 (JOIN)',
       body: `<h2>JOIN 类型</h2>
 <ul>
   <li><code>INNER JOIN</code> —— 内连接，只返回匹配的行</li>
@@ -858,7 +898,7 @@ JOIN users u ON o.user_id = u.id
 JOIN products p ON o.product_id = p.id;`
     },
     {
-      title: '10. 修改表结构 (ALTER/DROP)',
+      title: '8. 修改表结构 (ALTER/DROP)',
       body: `<h2>ALTER TABLE</h2>
 <p>SQLite 支持的 ALTER 操作有限，主要：</p>
 <ul>

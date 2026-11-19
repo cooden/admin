@@ -186,7 +186,8 @@
     { id: 'resources', icon: '📚', title: '资源导航',   desc: '设计、开发、学习、效率精选资源',         href: 'resources/index.html' },
     { id: 'reviews',   icon: '⭐', title: '产品测评',   desc: '主流工具深度对比测评，帮你选对',         href: 'reviews/index.html' },
     { id: 'games',     icon: '🎮', title: '小游戏站',   desc: '刀光剑影躲避飞刀，扁平3D质感休闲游戏',   href: 'games/index.html' },
-    { id: 'school',    icon: '🎓', title: '技校分布',   desc: '全国技校分布查询，学校信息、专业设置、招生详情', href: 'https://cooden.github.io/school' }
+    { id: 'school',    icon: '🎓', title: '技校分布',   desc: '全国技校分布查询，学校信息、专业设置、招生详情', href: 'https://cooden.github.io/school' },
+    { id: 'flower',    icon: '💐', title: '贺卡工坊',   desc: '定制电子贺卡，节日花束、祝福语，为她定制心意', href: 'https://cooden.github.io/flower' }
   ];
 
   // 计算当前页面到站点根目录的相对路径前缀（兼容 GitHub Pages 子路径）
