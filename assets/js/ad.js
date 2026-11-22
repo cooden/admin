@@ -5,15 +5,26 @@
  *   1. 配置了 AdSense → 显示真实 Google 广告
  *   2. 未配置 AdSense → 用兄弟站点推荐卡片替代空广告位（导流）
  *
- * 用法（页面任意位置）：
+ * 兄弟站点列表已内置固定（DEFAULT_SITES），跨项目复用无需重复配置，
+ * 传入的 siblingSites 会追加到固定列表后面（按 id 去重）。
+ *
+ * 最简用法（页面任意位置）：
+ *   <script src="/assets/js/ad.js"></script>
+ *   <div id="ad-top"></div>
+ *   <script>
+ *     Ad.init();  // 不传参也能用固定列表导流
+ *     document.getElementById('ad-top').appendChild(Ad.slot('leaderboard'));
+ *   </script>
+ *
+ * 完整配置（可选）：
  *   <script src="/assets/js/ad.js"></script>
  *   <script>
  *     Ad.init({
- *       adsenseId: 'ca-pub-XXXXXXXX',        // 可选，配置后显示真实广告
- *       siblingSites: [                        // 可选，未配置 AdSense 时的导流卡片
- *         { id: 'blog', icon: '📝', title: '博客', desc: '...', href: '/blog/' }
- *       ],
- *       currentSite: 'tools'                   // 可选，过滤掉指向自身的卡片
+ *       adsenseId: 'ca-pub-XXXXXXXX',   // 可选，配置后显示真实广告
+ *       currentSite: 'tools',           // 可选，过滤掉指向自身的卡片
+ *       siblingSites: [                 // 可选，追加额外导流卡片
+ *         { id: 'mine', icon: '✨', title: '我的站', desc: '...', href: 'https://...' }
+ *       ]
  *     });
  *   </script>
  *
@@ -35,11 +46,24 @@
 (function (window) {
   'use strict';
 
+  // 固定的兄弟站点导流列表（跨项目复用，使用绝对 URL 保证在任意项目都能跳转）
+  var DEFAULT_SITES = [
+    { id: 'students',  icon: '🎯', title: '趣味测试站', desc: '动物性格、星座配对、生日密码，学生最爱', href: 'https://cooden.github.io/admin/students/index.html' },
+    { id: 'tools',     icon: '🔧', title: '在线工具箱', desc: '单位换算、BMI、密码生成、SQL 学习，实用小工具', href: 'https://cooden.github.io/admin/tools/index.html' },
+    { id: 'blog',      icon: '📝', title: '生活百科',   desc: '健康科普、省电技巧、密码安全文章',       href: 'https://cooden.github.io/admin/blog/index.html' },
+    { id: 'resources', icon: '📚', title: '资源导航',   desc: '设计、开发、学习、效率精选资源',         href: 'https://cooden.github.io/admin/resources/index.html' },
+    { id: 'reviews',   icon: '⭐', title: '产品测评',   desc: '主流工具深度对比测评，帮你选对',         href: 'https://cooden.github.io/admin/reviews/index.html' },
+    { id: 'games',     icon: '🎮', title: '小游戏站',   desc: '刀光剑影躲避飞刀，扁平3D质感休闲游戏',   href: 'https://cooden.github.io/admin/games/index.html' },
+    { id: 'school',    icon: '🎓', title: '技校分布',   desc: '全国技校分布查询，学校信息、专业设置、招生详情', href: 'https://cooden.github.io/school' },
+    { id: 'flower',    icon: '💐', title: '贺卡工坊',   desc: '定制电子贺卡，节日花束、祝福语，为她定制心意', href: 'https://cooden.github.io/flower' },
+    { id: 'usa',       icon: '🗺️', title: '美国文化地图', desc: '50个州文化名片：音乐、美食、地标、人物，可交互地图探索', href: 'https://cooden.github.io/usa' }
+  ];
+
   var Ad = {
     config: {
       adsenseId: '',
       currentSite: '',
-      siblingSites: []
+      siblingSites: DEFAULT_SITES.slice()
     }
   };
 
@@ -173,7 +197,14 @@
     opts = opts || {};
     if (opts.adsenseId) Ad.config.adsenseId = opts.adsenseId;
     if (opts.currentSite) Ad.config.currentSite = opts.currentSite;
-    if (opts.siblingSites) Ad.config.siblingSites = opts.siblingSites;
+    if (opts.siblingSites) {
+      // 追加到固定列表，按 id 去重（固定列表始终保留）
+      var existIds = {};
+      Ad.config.siblingSites.forEach(function (s) { existIds[s.id] = true; });
+      opts.siblingSites.forEach(function (s) {
+        if (!existIds[s.id]) Ad.config.siblingSites.push(s);
+      });
+    }
     injectCSS();
     injectAdSense();
   };
