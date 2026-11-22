@@ -10,3 +10,7 @@ Thumbs.db
 # 编辑器
 .vscode/
 .idea/
+
+# 独立广告模块（供其他项目复用，不纳入本仓库）
+assets/js/ad.js
+tools/ad-test.html
