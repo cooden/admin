@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2的幂次方计算器 - 2的n次方速查表 | 实用工具箱</title>
+  <meta name="description" content="2的幂次方在线计算器，输入指数即得结果。内置2的1~30次方速查表，2的11次方、2的15次方、2的31次方等常用值一目了然，方便记忆。">
+  <meta name="keywords" content="2的幂次方,2的n次方,2的11次方,2的15次方,幂运算,次方计算器,在线工具">
+  <link rel="canonical" href="https://your-domain.com/tools/powers-of-2.html">
+  <link rel="stylesheet" href="../assets/css/style.css">
+
+  <!-- 百度统计 -->
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?78a1b20e8469a95c435d81b8d0797706";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+</head>
+<body>
+
+<main class="main">
+  <div class="container">
+    <div class="tool-page">
+      <div class="tool-content">
+        <h1>🔢 2的幂次方计算器</h1>
+        <p class="lead">输入指数 n，即时算出 2<sup>n</sup> 的值；下方速查表覆盖 2<sup>1</sup> ~ 2<sup>30</sup>，方便记忆。</p>
+
+        <!-- 计算器 -->
+        <div class="form-group">
+          <label>指数 n（2 的 n 次方）</label>
+          <input type="number" class="form-control" id="exp-input" value="11" min="0" max="200" oninput="Powers.calc()" style="font-size:1.4rem;font-weight:700;text-align:center">
+        </div>
+
+        <div class="result-box">
+          <div class="result-value" id="result-text">2¹¹ = 2048</div>
+          <div class="result-label" id="result-detail">点击下方表格任意一行可快速填入</div>
+        </div>
+
+        <!-- 广告 -->
+        <div id="ad-mid" style="margin-top:24px"></div>
+
+        <!-- 速查表 -->
+        <h2 style="font-size:1.2rem;margin:32px 0 12px">📋 2 的 1~30 次方速查表</h2>
+        <p style="color:var(--text-muted);font-size:.9rem;margin-bottom:16px">点击任意一行，把指数填入上方计算器。</p>
+        <div class="pow-table-wrap" id="pow-table"></div>
+
+        <!-- 说明 -->
+        <h2 style="font-size:1.2rem;margin-top:32px;margin-bottom:12px">关于 2 的幂次方</h2>
+        <p style="color:var(--text-muted);line-height:1.8">
+          2 的幂次方在计算机科学中无处不在：内存容量（1KB = 2<sup>10</sup> 字节）、
+          位运算、二进制计数、算法复杂度分析（O(log n)）等都以 2 为底。
+          常用的有 2<sup>8</sup>=256、2<sup>10</sup>=1024、2<sup>16</sup>=65536、
+          2<sup>32</sup>≈42.9 亿。本工具可计算任意非负整数次方，全部在浏览器本地完成。
+        </p>
+      </div>
+
+      <aside class="sidebar">
+        <div class="sidebar-widget">
+          <h3>其他工具</h3>
+          <ul>
+            <li><a href="bmi.html">⚖️ BMI 计算器</a></li>
+            <li><a href="password.html">🔐 密码生成器</a></li>
+            <li><a href="qrcode.html">📱 二维码生成</a></li>
+            <li><a href="color-picker.html">🎨 颜色选择器</a></li>
+            <li><a href="sql.html">🗄️ SQL 在线学习</a></li>
+            <li><a href="word-count.html">📝 字数统计</a></li>
+          </ul>
+        </div>
+        <div class="sidebar-widget" id="ad-side"></div>
+      </aside>
+    </div>
+  </div>
+</main>
+
+<script src="../assets/js/tracker.js?v=2" data-site="tools"></script>
+<script src="../assets/js/common.js?v=2"></script>
+<script>
+// 补零分组：1024 -> "1,024"
+function fmt(n) {
+  var s = String(n);
+  if (s.length <= 3) return s;
+  return s.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+
+var Powers = {
+  maxN: 30,
+
+  // 渲染速查表
+  renderTable: function () {
+    var rows = [];
+    for (var i = 1; i <= this.maxN; i++) {
+      var val = Math.pow(2, i);
+      // 超过安全整数时用科学计数法
+      var display = val > Number.MAX_SAFE_INTEGER ? val.toExponential(0) : fmt(val);
+      rows.push(
+        '<div class="pow-row" data-n="' + i + '">' +
+          '<span class="pow-exp">2<sup>' + i + '</sup></span>' +
+          '<span class="pow-val">' + display + '</span>' +
+        '</div>'
+      );
+    }
+    document.getElementById('pow-table').innerHTML = rows.join('');
+    var self = this;
+    document.getElementById('pow-table').addEventListener('click', function (e) {
+      var row = e.target.closest('.pow-row');
+      if (!row) return;
+      var n = row.getAttribute('data-n');
+      document.getElementById('exp-input').value = n;
+      self.calc();
+      MTA.track('click_pow_row', { n: n });
+    });
+  },
+
+  // 计算并展示
+  calc: function () {
+    var n = parseInt(document.getElementById('exp-input').value, 10);
+    if (isNaN(n) || n < 0) {
+      document.getElementById('result-text').textContent = '请输入非负整数';
+      document.getElementById('result-detail').textContent = '指数 n 必须是大于等于 0 的整数';
+      return;
+    }
+    var val = Math.pow(2, n);
+    var display;
+    if (val > Number.MAX_SAFE_INTEGER) {
+      display = val.toExponential(6);
+    } else {
+      display = fmt(val);
+    }
+    document.getElementById('result-text').innerHTML = '2<sup>' + n + '</sup> = ' + display;
+    document.getElementById('result-detail').textContent =
+      (n === 0) ? '任何数的 0 次方都等于 1' : (n + ' 个 2 相乘');
+    MTA.track('calc_pow', { n: n });
+  }
+};
+
+App.mount({
+  site: 'tools',
+  brand: '实用工具箱',
+  brandIcon: '🛠️',
+  nav: [
+    { label: '首页', href: 'index.html' },
+    { label: '单位转换', href: 'unit-converter.html' },
+    { label: 'BMI', href: 'bmi.html' },
+    { label: '密码生成', href: 'password.html' },
+    { label: '2的幂', href: 'powers-of-2.html' }
+  ],
+  footer: { tools: [], articles: [] }
+});
+
+Powers.renderTable();
+Powers.calc();
+document.getElementById('ad-mid').appendChild(App.ad('rectangle'));
+document.getElementById('ad-side').appendChild(App.ad('sidebar'));
+MTA.track('view_tool', { tool: 'powers_of_2' });
+</script>
+
+<style>
+.pow-table-wrap {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 10px;
+}
+.pow-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 8px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all .15s;
+}
+.pow-row:hover {
+  border-color: var(--primary, #4f46e5);
+  background: var(--primary-soft, #eef2ff);
+  transform: translateY(-2px);
+}
+.pow-exp {
+  font-size: .85rem;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+.pow-val {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--primary, #4f46e5);
+  word-break: break-all;
+  text-align: center;
+}
+</style>
+
+</body>
+</html>
