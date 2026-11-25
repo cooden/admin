@@ -40,9 +40,6 @@
           <div class="result-label" id="result-detail">点击下方表格任意一行可快速填入</div>
         </div>
 
-        <!-- 广告 -->
-        <div id="ad-mid" style="margin-top:24px"></div>
-
         <!-- 速查表 -->
         <h2 style="font-size:1.2rem;margin:32px 0 12px">📋 2 的 1~30 次方速查表</h2>
         <p style="color:var(--text-muted);font-size:.9rem;margin-bottom:16px">点击任意一行，把指数填入上方计算器。</p>
@@ -153,7 +150,6 @@ App.mount({
 
 Powers.renderTable();
 Powers.calc();
-document.getElementById('ad-mid').appendChild(App.ad('rectangle'));
 document.getElementById('ad-side').appendChild(App.ad('sidebar'));
 MTA.track('view_tool', { tool: 'powers_of_2' });
 </script>
