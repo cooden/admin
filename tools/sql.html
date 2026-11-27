@@ -619,6 +619,136 @@ $('sql-editor').addEventListener('keydown', e => {
   }
 });
 
+/* ===================== SQL 关键字自动补全 ===================== */
+const SQL_KEYWORDS = [
+  'SELECT','FROM','WHERE','INSERT','INTO','VALUES','UPDATE','SET','DELETE',
+  'CREATE','TABLE','DATABASE','DROP','ALTER','ADD','COLUMN','PRIMARY','KEY',
+  'FOREIGN','REFERENCES','AND','OR','NOT','NULL','IS','IN','LIKE','BETWEEN',
+  'ORDER','BY','GROUP','HAVING','LIMIT','OFFSET','JOIN','INNER','LEFT','RIGHT',
+  'ON','AS','DISTINCT','COUNT','SUM','AVG','MAX','MIN','INTEGER','TEXT','REAL',
+  'BLOB','DEFAULT','UNIQUE','CHECK','CONSTRAINT','INDEX','VIEW','IF','EXISTS',
+  'AUTOINCREMENT','DESC','ASC','UNION','ALL','CASE','WHEN','THEN','ELSE','END',
+  'PRAGMA','ATTACH','DETACH','BEGIN','COMMIT','ROLLBACK','TRANSACTION','GLOB',
+  'CAST','COALESCE','NULLIF','IFNULL','RANDOM','ABORT','REPLACE','VACUUM','ANALYZE'
+];
+
+(function () {
+  const ed = $('sql-editor');
+  const box = document.createElement('div');
+  box.style.cssText = 'position:fixed;z-index:2000;background:#fff;border:1px solid #e2e8f0;' +
+    'border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.15);max-height:200px;overflow-y:auto;' +
+    'font-family:Consolas,Monaco,monospace;font-size:13px;display:none;min-width:140px;';
+  document.body.appendChild(box);
+
+  let cur = [];
+  let idx = -1;
+
+  // 光标前的单词（用于前缀匹配）
+  function wordBefore() {
+    const pos = ed.selectionStart;
+    const text = ed.value.slice(0, pos);
+    const m = /[A-Za-z_]+$/.exec(text);
+    return m ? m[0] : '';
+  }
+
+  function hide() { box.style.display = 'none'; cur = []; idx = -1; }
+
+  function render() {
+    if (!cur.length) { hide(); return; }
+    box.innerHTML = '';
+    cur.forEach((kw, i) => {
+      const d = document.createElement('div');
+      d.style.cssText = 'padding:7px 14px;cursor:pointer;white-space:nowrap;' +
+        (i === idx ? 'background:#eef2ff;color:#4f46e5;' : 'color:#334155;');
+      d.textContent = kw;
+      d.onmousedown = e => { e.preventDefault(); apply(kw); };
+      box.appendChild(d);
+    });
+    box.style.display = 'block';
+  }
+
+  // 用镜像 div 计算光标在 textarea 中的坐标
+  function caretXY() {
+    const cs = getComputedStyle(ed);
+    const mirror = document.createElement('div');
+    const props = ['font-family','font-size','font-weight','line-height','letter-spacing',
+      'white-space','word-break','padding','border','box-sizing'];
+    props.forEach(p => mirror.style[p] = cs[p]);
+    mirror.style.position = 'absolute';
+    mirror.style.visibility = 'hidden';
+    mirror.style.left = '-9999px';
+    mirror.style.width = ed.clientWidth + 'px';
+    mirror.textContent = ed.value.substring(0, ed.selectionStart);
+    const span = document.createElement('span');
+    span.textContent = ed.value.substring(ed.selectionStart) || '.';
+    mirror.appendChild(span);
+    document.body.appendChild(mirror);
+    const mRect = mirror.getBoundingClientRect();
+    const sRect = span.getBoundingClientRect();
+    document.body.removeChild(mirror);
+    return { x: sRect.left - mRect.left, y: sRect.top - mRect.top };
+  }
+
+  function position() {
+    const er = ed.getBoundingClientRect();
+    const c = caretXY();
+    box.style.left = (er.left + c.x + 8) + 'px';
+    box.style.top = (er.top + c.y + 18) + 'px';
+    // 防止超出视口底部
+    const br = box.getBoundingClientRect();
+    if (br.bottom > window.innerHeight) box.style.top = (er.top + c.y - br.height - 6) + 'px';
+  }
+
+  // 用大写关键字替换光标前的单词
+  function apply(kw) {
+    const pos = ed.selectionStart;
+    const word = wordBefore();
+    const start = pos - word.length;
+    ed.value = ed.value.slice(0, start) + kw + ed.value.slice(pos);
+    ed.selectionStart = ed.selectionEnd = start + kw.length;
+    hide();
+    ed.focus();
+  }
+
+  function showIfNeeded() {
+    const word = wordBefore();
+    if (word.length >= 1) {
+      const upper = word.toUpperCase();
+      cur = SQL_KEYWORDS.filter(k => k.startsWith(upper));
+      idx = cur.length ? 0 : -1;
+      render();
+      if (cur.length) position();
+    } else {
+      hide();
+    }
+  }
+
+  ed.addEventListener('input', showIfNeeded);
+  ed.addEventListener('keydown', e => {
+    if (box.style.display === 'block') {
+      if (e.key === 'Tab' || (e.key === 'Enter' && idx >= 0)) {
+        e.preventDefault();
+        if (idx >= 0) apply(cur[idx]);
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault(); idx = (idx + 1) % cur.length; render();
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault(); idx = (idx - 1 + cur.length) % cur.length; render();
+      } else if (e.key === 'Escape') {
+        hide();
+      }
+    } else if (e.key === 'Tab') {
+      // 无下拉时，Tab 直接补全光标前单词为第一个匹配（大写）
+      const word = wordBefore();
+      if (word.length >= 2) {
+        const upper = word.toUpperCase();
+        const matches = SQL_KEYWORDS.filter(k => k.startsWith(upper));
+        if (matches.length) { e.preventDefault(); apply(matches[0]); }
+      }
+    }
+  });
+  ed.addEventListener('blur', () => setTimeout(hide, 150));
+})();
+
 // 新建数据库（ATTACH :memory:）
 $('btn-new-db').onclick = () => {
   const name = prompt('请输入新数据库名称（字母数字下划线）：', 'mydb');
